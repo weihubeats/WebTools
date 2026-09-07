@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图片压缩 · WebTools</title>
+  <meta name="description" content="免费在线图片压缩：canvas 本地缩放与质量调节，JPEG/WebP/PNG 互转，全本地运行。" />
+  <link rel="stylesheet" href="../assets/css/common.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="logo" href="../index.html">🧰 Web<span>Tools</span></a>
+      <nav class="nav">
+        <a href="../index.html">首页</a>
+        <a href="./json-formatter.html">JSON</a>
+        <a href="./base64.html">Base64</a>
+        <a href="./timestamp.html">时间戳</a>
+        <a href="./url-codec.html">URL</a>
+        <a href="./regex.html">正则</a>
+        <a href="./jwt.html">JWT</a>
+        <a href="./text-diff.html">对比</a>
+        <a href="./password.html">密码</a>
+        <a href="./markdown.html">MD</a>
+        <a href="./image-compress.html" class="active">图片</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title">
+      <h1>🖼️ 图片压缩</h1>
+      <p>浏览器 canvas 本地压缩：限宽高缩放、质量调节、格式转换，不上传服务器。</p>
+    </div>
+
+    <section class="pane" style="margin:12px 0">
+      <div class="pane-header"><span>选择图片 <span class="drop-hint">（点击或拖拽到下方虚线框，支持 jpg / png / webp / gif 首帧）</span></span>
+        <span class="actions">
+          <button class="btn small primary" id="btn-file">选择图片</button>
+          <input type="file" id="file-input" accept="image/*" hidden />
+        </span>
+      </div>
+      <div id="dropzone" class="dropzone">把图片拖到这里，或点右上「选择图片」</div>
+    </section>
+
+    <div class="toolbar">
+      <label style="font-size:14px">最大宽 <input type="number" id="in-maxw" value="1600" min="16" max="8000" style="width:80px" /> px</label>
+      <label style="font-size:14px">最大高 <input type="number" id="in-maxh" value="1600" min="16" max="8000" style="width:80px" /> px</label>
+      <label style="font-size:14px">质量 <input type="range" id="in-q" min="10" max="100" value="80" style="vertical-align:middle" /> <b id="q-val">80%</b></label>
+      <label style="font-size:14px">格式
+        <select id="sel-fmt">
+          <option value="auto" selected>保持原格式</option>
+          <option value="image/jpeg">JPEG（小，适合照片）</option>
+          <option value="image/webp">WebP（更小，需浏览器支持）</option>
+          <option value="image/png">PNG（无损，适合截图/透明）</option>
+        </select>
+      </label>
+      <span class="spacer"></span>
+      <button class="btn primary" id="btn-compress" disabled>压缩</button>
+      <button class="btn" id="btn-download" disabled>下载结果</button>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="workarea">
+      <section class="pane">
+        <div class="pane-header"><span>原图</span><span class="drop-hint" id="info-src">-</span></div>
+        <div style="padding:12px;text-align:center"><img id="img-src" class="cmp-img" alt="原图预览" /></div>
+      </section>
+      <section class="pane">
+        <div class="pane-header"><span>压缩后</span><span class="drop-hint" id="info-dst">-</span></div>
+        <div style="padding:12px;text-align:center"><img id="img-dst" class="cmp-img" alt="压缩结果预览" /></div>
+      </section>
+    </div>
+
+    <div class="statusbar" style="margin-bottom:40px">
+      <span>原图：<b id="st-src">-</b></span>
+      <span>压缩后：<b id="st-dst">-</b></span>
+      <span>压缩率：<b id="st-ratio">-</b></span>
+      <span>尺寸：<b id="st-dim">-</b></span>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行</div>
+  </footer>
+
+  <script src="../assets/js/image-compress.js"></script>
+</body>
+</html>

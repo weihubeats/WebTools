@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>正则测试 · WebTools</title>
+  <meta name="description" content="免费在线正则表达式测试：实时匹配高亮、分组明细、替换预览、常用模式速查，全本地运行。" />
+  <link rel="stylesheet" href="../assets/css/common.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="logo" href="../index.html">🧰 Web<span>Tools</span></a>
+      <nav class="nav">
+        <a href="../index.html">首页</a>
+        <a href="./json-formatter.html">JSON</a>
+        <a href="./base64.html">Base64</a>
+        <a href="./timestamp.html">时间戳</a>
+        <a href="./url-codec.html">URL</a>
+        <a href="./regex.html" class="active">正则</a>
+        <a href="./jwt.html">JWT</a>
+        <a href="./text-diff.html">对比</a>
+        <a href="./password.html">密码</a>
+        <a href="./markdown.html">MD</a>
+        <a href="./image-compress.html">图片</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title">
+      <h1>🧪 正则表达式测试</h1>
+      <p>JS 语法实时匹配、高亮、分组明细、替换预览，附常用模式速查，全本地运行。</p>
+    </div>
+
+    <section class="pane" style="margin:12px 0">
+      <div class="pane-header"><span>正则表达式</span>
+        <span class="actions"><button class="btn small" id="btn-cheatsheet">常用模式 ▼</button></span>
+      </div>
+      <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="color:var(--muted)">/</span>
+          <input id="in-pattern" class="field" style="flex:1;min-width:200px;font-family:ui-monospace,monospace" placeholder="输入正则，如 (\d{4})-(\d{2})-(\d{2})" spellcheck="false" />
+          <span style="color:var(--muted)">/</span>
+          <label title="全局匹配"><input type="checkbox" id="f-g" checked /> g</label>
+          <label title="忽略大小写"><input type="checkbox" id="f-i" /> i</label>
+          <label title="多行模式"><input type="checkbox" id="f-m" /> m</label>
+          <label title="点号匹配换行"><input type="checkbox" id="f-s" /> s</label>
+          <label title="Unicode 模式"><input type="checkbox" id="f-u" /> u</label>
+        </div>
+        <div id="cheatsheet" class="result-box" hidden></div>
+        <div id="alert" class="alert"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input id="in-replace" class="field" style="flex:1;min-width:200px" placeholder="替换为（支持 $1 $2 $& 等），留空则只测试匹配" spellcheck="false" />
+          <button class="btn small primary" id="btn-replace">应用替换 →</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="workarea">
+      <section class="pane">
+        <div class="pane-header"><span>测试文本</span>
+          <span class="actions">
+            <button class="btn small" id="btn-sample">示例</button>
+            <button class="btn small" id="btn-clear">清空</button>
+          </span>
+        </div>
+        <textarea id="ta-src" class="tall" placeholder="在此粘贴要测试的文本…" spellcheck="false"></textarea>
+      </section>
+      <section class="pane">
+        <div class="pane-header"><span>匹配高亮</span>
+          <span class="actions"><button class="btn small" id="btn-copy-repl">复制替换结果</button></span>
+        </div>
+        <div class="output-wrap"><div id="hl-view" class="hl-view">匹配结果将高亮显示在这里…</div></div>
+      </section>
+    </div>
+
+    <div class="statusbar">
+      <span>匹配数：<b id="st-count">0</b></span>
+      <span>耗时：<b id="st-time">-</b></span>
+      <span>状态：<b id="st-status">待输入</b></span>
+    </div>
+
+    <section class="pane" style="margin-bottom:12px">
+      <div class="pane-header"><span>匹配明细（含捕获组）</span></div>
+      <div style="padding:12px">
+        <table class="kv-table"><thead><tr><th style="width:56px">#</th><th>匹配文本</th><th style="width:90px">位置</th><th>捕获组</th></tr></thead>
+        <tbody id="match-body"><tr><td colspan="4" style="color:var(--muted)">暂无匹配</td></tr></tbody></table>
+      </div>
+    </section>
+
+    <section class="pane" style="margin-bottom:40px">
+      <div class="pane-header"><span>替换结果预览</span></div>
+      <div id="repl-view" class="result-box" style="margin:12px">在上方输入“替换为”并点「应用替换」，或开启实时替换。</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行</div>
+  </footer>
+
+  <script src="../assets/js/regex.js"></script>
+</body>
+</html>

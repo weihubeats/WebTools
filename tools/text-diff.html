@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>文本对比 · WebTools</title>
+  <meta name="description" content="免费在线文本对比：行级 diff 高亮、忽略空白/大小写可选、统计与结果复制，全本地运行。" />
+  <link rel="stylesheet" href="../assets/css/common.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="logo" href="../index.html">🧰 Web<span>Tools</span></a>
+      <nav class="nav">
+        <a href="../index.html">首页</a>
+        <a href="./json-formatter.html">JSON</a>
+        <a href="./base64.html">Base64</a>
+        <a href="./timestamp.html">时间戳</a>
+        <a href="./url-codec.html">URL</a>
+        <a href="./regex.html">正则</a>
+        <a href="./jwt.html">JWT</a>
+        <a href="./text-diff.html" class="active">对比</a>
+        <a href="./password.html">密码</a>
+        <a href="./markdown.html">MD</a>
+        <a href="./image-compress.html">图片</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title">
+      <h1>📝 文本对比（Diff）</h1>
+      <p>行级对比、增删高亮、忽略空白 / 大小写可选，适合对比配置、文案、代码片段，全本地运行。</p>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn primary" id="btn-diff">开始对比</button>
+      <label style="font-size:14px;color:var(--muted)"><input type="checkbox" id="chk-ws" /> 忽略行首尾空白</label>
+      <label style="font-size:14px;color:var(--muted)"><input type="checkbox" id="chk-case" /> 忽略大小写</label>
+      <label style="font-size:14px;color:var(--muted)"><input type="checkbox" id="chk-live" checked /> 实时对比</label>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-sample">示例</button>
+      <button class="btn" id="btn-swap">⇄ 互换</button>
+      <button class="btn" id="btn-clear">清空</button>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="workarea">
+      <section class="pane">
+        <div class="pane-header"><span>原文 A</span>
+          <span class="actions"><button class="btn small" id="btn-paste-a">粘贴</button></span>
+        </div>
+        <textarea id="ta-a" class="tall" placeholder="粘贴第一份文本…" spellcheck="false"></textarea>
+      </section>
+      <section class="pane">
+        <div class="pane-header"><span>原文 B</span>
+          <span class="actions"><button class="btn small" id="btn-paste-b">粘贴</button></span>
+        </div>
+        <textarea id="ta-b" class="tall" placeholder="粘贴第二份文本…" spellcheck="false"></textarea>
+      </section>
+    </div>
+
+    <div class="statusbar">
+      <span>结果：<b id="st-status">待对比</b></span>
+      <span>相同：<b id="st-eq">-</b> 行</span>
+      <span>删除：<b id="st-del">-</b> 行</span>
+      <span>新增：<b id="st-add">-</b> 行</span>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn small" id="btn-copy">复制 diff 文本</button>
+    </div>
+
+    <section class="pane" style="margin-bottom:40px">
+      <div class="pane-header"><span>对比结果 <span class="drop-hint">（- 删除 / + 新增）</span></span></div>
+      <div id="diff-view" class="diff-view">对比结果将显示在这里…</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行</div>
+  </footer>
+
+  <script src="../assets/js/text-diff.js"></script>
+</body>
+</html>

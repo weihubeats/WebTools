@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>时间戳转换 · WebTools</title>
+  <meta name="description" content="免费在线 Unix 时间戳转换：时间戳 ⇄ 日期、毫秒/秒自适应、常用时区、ISO/UTC/本地格式，全本地运行。" />
+  <link rel="stylesheet" href="../assets/css/common.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="logo" href="../index.html">🧰 Web<span>Tools</span></a>
+      <nav class="nav">
+        <a href="../index.html">首页</a>
+        <a href="./json-formatter.html">JSON</a>
+        <a href="./base64.html">Base64</a>
+        <a href="./timestamp.html" class="active">时间戳</a>
+        <a href="./url-codec.html">URL</a>
+        <a href="./regex.html">正则</a>
+        <a href="./jwt.html">JWT</a>
+        <a href="./text-diff.html">对比</a>
+        <a href="./password.html">密码</a>
+        <a href="./markdown.html">MD</a>
+        <a href="./image-compress.html">图片</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title">
+      <h1>⏰ 时间戳转换</h1>
+      <p>Unix 时间戳 ⇄ 日期字符串，秒 / 毫秒自适应，支持常用时区切换，全本地运行。</p>
+    </div>
+
+    <section class="pane" style="margin:12px 0">
+      <div class="pane-header"><span>现在 <span class="drop-hint">（每秒刷新）</span></span>
+        <span class="actions"><button class="btn small" id="btn-now">用当前时间填充</button></span>
+      </div>
+      <div class="now-grid">
+        <div><div class="k">秒级时间戳</div><div class="v" id="now-s">-</div></div>
+        <div><div class="k">毫秒级时间戳</div><div class="v" id="now-ms">-</div></div>
+        <div><div class="k">本地时间</div><div class="v" id="now-local">-</div></div>
+        <div><div class="k">UTC</div><div class="v" id="now-utc">-</div></div>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <label style="font-size:14px">时区
+        <select id="sel-tz">
+          <option value="local" selected>本地时区</option>
+          <option value="UTC">UTC</option>
+          <option value="Asia/Shanghai">Asia/Shanghai（北京时间）</option>
+          <option value="Asia/Tokyo">Asia/Tokyo</option>
+          <option value="Europe/London">Europe/London</option>
+          <option value="Europe/Paris">Europe/Paris</option>
+          <option value="America/New_York">America/New_York</option>
+          <option value="America/Los_Angeles">America/Los_Angeles</option>
+        </select>
+      </label>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-sample">示例</button>
+      <button class="btn" id="btn-clear">清空</button>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="workarea">
+      <section class="pane">
+        <div class="pane-header"><span>时间戳 → 日期</span>
+          <span class="actions"><button class="btn small primary" id="btn-t2d">转换 →</button></span>
+        </div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+          <input id="in-ts" class="field" inputmode="numeric" placeholder="输入时间戳，如 1757200000 或 1757200000000" />
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn small" data-ts="now-s">当前（秒）</button>
+            <button class="btn small" data-ts="now-ms">当前（毫秒）</button>
+            <button class="btn small" data-ts="day">今天 00:00</button>
+          </div>
+          <div id="out-date" class="result-box">转换结果显示在这里…</div>
+        </div>
+      </section>
+
+      <section class="pane">
+        <div class="pane-header"><span>日期 → 时间戳</span>
+          <span class="actions"><button class="btn small primary" id="btn-d2t">← 转换</button></span>
+        </div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+          <input id="in-date" class="field" placeholder="输入日期，如 2026-09-07 12:00:00 或 ISO 格式" />
+          <label style="font-size:13px;color:var(--muted)">或用选择器 <input type="datetime-local" id="in-picker" class="field" style="margin-top:4px" /></label>
+          <div id="out-ts" class="result-box">转换结果显示在这里…</div>
+        </div>
+      </section>
+    </div>
+
+    <p style="color:var(--muted);font-size:13px;margin:0 0 40px">
+      说明：10 位数字按秒、13 位按毫秒解析；其他长度按数量级自动换算。日期解析支持
+      <code>YYYY-MM-DD HH:mm:ss</code>、<code>ISO8601</code>、<code>MM/DD/YYYY</code> 等常见格式，解析失败会明确报错。
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行</div>
+  </footer>
+
+  <script src="../assets/js/timestamp.js"></script>
+</body>
+</html>

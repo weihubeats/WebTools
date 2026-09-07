@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Base64 编解码 · WebTools</title>
+  <meta name="description" content="免费在线 Base64 编解码：文本互转（UTF-8）、URL-safe、文件转 Base64、图片预览，全本地运行。" />
+  <link rel="stylesheet" href="../assets/css/common.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔣</text></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="logo" href="../index.html">🧰 Web<span>Tools</span></a>
+      <nav class="nav">
+        <a href="../index.html">首页</a>
+        <a href="./json-formatter.html">JSON</a>
+        <a href="./base64.html" class="active">Base64</a>
+        <a href="./timestamp.html">时间戳</a>
+        <a href="./url-codec.html">URL</a>
+        <a href="./regex.html">正则</a>
+        <a href="./jwt.html">JWT</a>
+        <a href="./text-diff.html">对比</a>
+        <a href="./password.html">密码</a>
+        <a href="./markdown.html">MD</a>
+        <a href="./image-compress.html">图片</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title">
+      <h1>🔣 Base64 编解码</h1>
+      <p>文本 ⇄ Base64（UTF-8 安全）、URL-safe 模式、文件转 Base64 / DataURL 预览，全本地运行。</p>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn primary" id="btn-encode">编码 →</button>
+      <button class="btn primary" id="btn-decode">← 解码</button>
+      <label style="font-size:14px;color:var(--muted)"><input type="checkbox" id="chk-urlsafe" /> URL-safe（- _ 替换 + /，去 =）</label>
+      <label style="font-size:14px;color:var(--muted)"><input type="checkbox" id="chk-live" checked /> 实时转换</label>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-sample">示例</button>
+      <button class="btn" id="btn-swap">⇄ 互换</button>
+      <button class="btn" id="btn-clear">清空</button>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="workarea">
+      <section class="pane">
+        <div class="pane-header">
+          <span>原文 / 文本</span>
+          <span class="actions">
+            <button class="btn small" id="btn-copy-text">复制</button>
+          </span>
+        </div>
+        <textarea id="ta-text" class="tall" placeholder="在此输入要编码的文本，例如：你好 WebTools 👋" spellcheck="false"></textarea>
+      </section>
+      <section class="pane">
+        <div class="pane-header">
+          <span>Base64</span>
+          <span class="actions">
+            <button class="btn small" id="btn-copy-b64">复制</button>
+            <button class="btn small" id="btn-download-b64">下载 .txt</button>
+          </span>
+        </div>
+        <textarea id="ta-b64" class="tall" placeholder="Base64 结果将显示在这里，也可粘贴 Base64 到这里点「解码」" spellcheck="false"></textarea>
+      </section>
+    </div>
+
+    <div class="statusbar">
+      <span>文本：<b id="st-text">0</b> 字符</span>
+      <span>Base64：<b id="st-b64">0</b> 字符</span>
+      <span>预估原文件大小：<b id="st-size">-</b></span>
+      <span>状态：<b id="st-status">待处理</b></span>
+    </div>
+
+    <section class="pane" style="margin-bottom:12px">
+      <div class="pane-header">
+        <span>文件 → Base64 / DataURL（图片可预览）</span>
+        <span class="actions">
+          <button class="btn small" id="btn-file">选择文件</button>
+          <input type="file" id="file-input" hidden />
+        </span>
+      </div>
+      <div style="padding:12px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+        <div style="flex:1;min-width:240px">
+          <div class="drop-hint" id="file-info" style="margin-bottom:8px">支持任意文件转 Base64；图片会显示预览。也可把文件拖到任一输入框。</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn small" id="btn-file-to-text">结果填入 Base64 框</button>
+            <button class="btn small" id="btn-download-file" disabled>下载还原文件</button>
+          </div>
+          <div id="file-output" style="margin-top:8px;font-size:12px;color:var(--muted);word-break:break-all"></div>
+        </div>
+        <div id="file-preview" style="max-width:280px">
+          <img id="img-preview" alt="" style="display:none;max-width:260px;border:1px solid var(--border);border-radius:8px" />
+        </div>
+      </div>
+      <div style="padding:0 12px 12px" class="drop-hint">💡 大文件（&gt;5MB）转码可能较慢，已做分片保护；文件不上传，全在浏览器内存中处理。</div>
+    </section>
+
+    <p style="color:var(--muted);font-size:13px;margin:0 0 40px">
+      说明：标准 Base64 含 <code>+ / =</code>，URL-safe 模式用 <code>- _</code> 替换并去掉 padding，解码时两者自动兼容。
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行</div>
+  </footer>
+
+  <script src="../assets/js/base64.js"></script>
+</body>
+</html>

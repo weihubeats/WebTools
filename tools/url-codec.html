@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URL 编解码 · WebTools</title>
+  <meta name="description" content="免费在线 URL 编解码：encodeURI/Component、Query 参数解析与回拼、URL 结构拆解，全本地运行。" />
+  <link rel="stylesheet" href="../assets/css/common.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="logo" href="../index.html">🧰 Web<span>Tools</span></a>
+      <nav class="nav">
+        <a href="../index.html">首页</a>
+        <a href="./json-formatter.html">JSON</a>
+        <a href="./base64.html">Base64</a>
+        <a href="./timestamp.html">时间戳</a>
+        <a href="./url-codec.html" class="active">URL</a>
+        <a href="./regex.html">正则</a>
+        <a href="./jwt.html">JWT</a>
+        <a href="./text-diff.html">对比</a>
+        <a href="./password.html">密码</a>
+        <a href="./markdown.html">MD</a>
+        <a href="./image-compress.html">图片</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title">
+      <h1>🔗 URL 编解码 / Query 解析</h1>
+      <p>encodeURI ⇄ encodeURIComponent、Query 表格化编辑、URL 结构拆解，全本地运行。</p>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn primary" id="btn-encode">编码 ↓</button>
+      <button class="btn primary" id="btn-decode">解码 ↑</button>
+      <label style="font-size:14px;color:var(--muted)">模式
+        <select id="sel-mode">
+          <option value="component" selected>encodeURIComponent（推荐，编码更彻底）</option>
+          <option value="uri">encodeURI（保留 : / ? # & = 等）</option>
+        </select>
+      </label>
+      <label style="font-size:14px;color:var(--muted)"><input type="checkbox" id="chk-live" checked /> 实时转换</label>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-sample">示例</button>
+      <button class="btn" id="btn-swap">⇄ 互换</button>
+      <button class="btn" id="btn-clear">清空</button>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="workarea">
+      <section class="pane">
+        <div class="pane-header"><span>原文</span>
+          <span class="actions"><button class="btn small" id="btn-copy-raw">复制</button></span>
+        </div>
+        <textarea id="ta-raw" class="tall" placeholder="输入原文，如：https://example.com/搜索?q=你好&lang=zh#锚点" spellcheck="false"></textarea>
+      </section>
+      <section class="pane">
+        <div class="pane-header"><span>编码后</span>
+          <span class="actions"><button class="btn small" id="btn-copy-enc">复制</button></span>
+        </div>
+        <textarea id="ta-enc" class="tall" placeholder="编码结果在这里；也可粘贴编码串点「解码」" spellcheck="false"></textarea>
+      </section>
+    </div>
+
+    <div class="statusbar">
+      <span>原文：<b id="st-raw">0</b> 字符</span>
+      <span>编码后：<b id="st-enc">0</b> 字符</span>
+      <span>状态：<b id="st-status">待处理</b></span>
+    </div>
+
+    <section class="pane" style="margin-bottom:12px">
+      <div class="pane-header"><span>Query 参数解析 / 编辑</span>
+        <span class="actions">
+          <button class="btn small" id="btn-parse">从原文解析</button>
+          <button class="btn small primary" id="btn-build">用下表重新拼回 URL</button>
+        </span>
+      </div>
+      <div style="padding:12px">
+        <table class="kv-table" id="kv-table">
+          <thead><tr><th style="width:32%">key</th><th>value</th><th style="width:64px">操作</th></tr></thead>
+          <tbody id="kv-body"></tbody>
+        </table>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn small" id="btn-add-row">+ 添加参数</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" style="margin-bottom:40px">
+      <div class="pane-header"><span>URL 结构拆解</span>
+        <span class="actions"><button class="btn small" id="btn-split">拆解原文</button></span>
+      </div>
+      <div id="url-parts" class="result-box" style="margin:12px">点「拆解原文」查看 protocol / host / path / query / hash…</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行</div>
+  </footer>
+
+  <script src="../assets/js/url-codec.js"></script>
+</body>
+</html>

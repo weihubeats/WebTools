@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON 格式化 · WebTools</title>
+  <meta name="description" content="免费在线 JSON 格式化：验证、美化、压缩、高亮、树形预览、排序、转义，全本地运行。" />
+  <link rel="stylesheet" href="../assets/css/common.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="logo" href="../index.html">🧰 Web<span>Tools</span></a>
+      <nav class="nav">
+        <a href="../index.html">首页</a>
+        <a href="./json-formatter.html" class="active">JSON</a>
+        <a href="./base64.html">Base64</a>
+        <a href="./timestamp.html">时间戳</a>
+        <a href="./url-codec.html">URL</a>
+        <a href="./regex.html">正则</a>
+        <a href="./jwt.html">JWT</a>
+        <a href="./text-diff.html">对比</a>
+        <a href="./password.html">密码</a>
+        <a href="./markdown.html">MD</a>
+        <a href="./image-compress.html">图片</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title">
+      <h1>📦 JSON 格式化 / 验证 / 压缩</h1>
+      <p>全本地解析，不上传服务器。可粘贴、拖入 .json 文件。支持缩进选择、键排序、转义处理、树形预览。</p>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn primary" id="btn-format">格式化</button>
+      <button class="btn" id="btn-minify">压缩</button>
+      <button class="btn" id="btn-validate">验证</button>
+      <button class="btn" id="btn-sort">键排序</button>
+      <button class="btn" id="btn-escape">转义</button>
+      <button class="btn" id="btn-unescape">去转义</button>
+      <label style="font-size:14px;color:var(--muted)">缩进
+        <select id="sel-indent">
+          <option value="2" selected>2 空格</option>
+          <option value="4">4 空格</option>
+          <option value="tab">Tab</option>
+          <option value="0">0（压缩）</option>
+        </select>
+      </label>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-sample">示例</button>
+      <button class="btn" id="btn-clear">清空</button>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="workarea">
+      <section class="pane">
+        <div class="pane-header">
+          <span>输入 JSON</span>
+          <span class="actions">
+            <button class="btn small" id="btn-upload">导入文件</button>
+            <button class="btn small" id="btn-paste">从剪贴板粘贴</button>
+            <input type="file" id="file-input" accept=".json,.txt,application/json" hidden />
+          </span>
+        </div>
+        <textarea id="json-input" placeholder='在此粘贴 JSON，例如：{"name":"webtools","ok":true}&#10;也支持直接把 .json 文件拖到这里' spellcheck="false"></textarea>
+        <div style="padding:8px 12px;border-top:1px solid var(--border)" class="drop-hint">💡 支持 Ctrl/Cmd + Enter 快捷格式化 · 输入自动保存在本地（localStorage）</div>
+      </section>
+
+      <section class="pane">
+        <div class="pane-header">
+          <span class="tabs">
+            <button class="btn small active" id="tab-text">文本</button>
+            <button class="btn small" id="tab-tree">树形</button>
+          </span>
+          <span class="actions">
+            <button class="btn small" id="btn-copy">复制结果</button>
+            <button class="btn small" id="btn-download">下载 .json</button>
+          </span>
+        </div>
+        <div class="output-wrap">
+          <pre id="json-output" class="placeholder">格式化结果将显示在这里…</pre>
+          <div id="json-tree" class="tree" hidden></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="statusbar" id="statusbar">
+      <span>状态：<b id="st-status">待处理</b></span>
+      <span>输入：<b id="st-input">0</b> 字符</span>
+      <span>输出：<b id="st-output">0</b> 字符</span>
+      <span>类型：<b id="st-type">-</b></span>
+      <span>深度：<b id="st-depth">-</b></span>
+      <span>键数：<b id="st-keys">-</b></span>
+    </div>
+
+    <p style="color:var(--muted);font-size:13px;margin:0 0 40px">
+      说明：验证失败时会定位错误位置（尽力给出行 / 列）；大文件（&gt;1MB）仍可处理但树形预览会自动截断以防卡顿。
+      新增工具只需在 <code>tools/</code> 下加一个 html 文件，并在首页加卡片即可，样式复用 <code>assets/css/common.css</code>。
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行</div>
+  </footer>
+
+  <script src="../assets/js/json-formatter.js"></script>
+</body>
+</html>
