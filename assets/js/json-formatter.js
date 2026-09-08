@@ -3,6 +3,7 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   const input = $("json-input");
+  const hl = $("json-input-hl");
   const output = $("json-output");
   const treeEl = $("json-tree");
   const alertBox = $("alert");
@@ -98,6 +99,16 @@
     );
   }
   // 注意：esc 后双引号变成 &quot;，上面的正则按 &quot; 处理。数字/bool/null 不受 esc 影响。
+
+  // 输入框语法高亮：textarea 无法着色，用底层 <pre> 叠加实现
+  function renderInputHighlight() {
+    hl.innerHTML = input.value ? highlight(input.value) + "\n" : "";
+    hl.scrollTop = input.scrollTop;
+  }
+  // 对齐输入框滚动条占位，保证换行位置与 textarea 一致
+  function syncHlPadding() {
+    hl.style.paddingRight = (12 + (input.offsetWidth - input.clientWidth)) + "px";
+  }
 
   function render(text, value) {
     lastText = text;
@@ -235,7 +246,7 @@
   $("btn-escape").addEventListener("click", () => {
     if (!input.value) return showAlert("输入为空，无需转义。", false);
     input.value = JSON.stringify(input.value);
-    updateInputCount(); save();
+    updateInputCount(); save(); renderInputHighlight();
     showAlert("已将输入整体转义为 JSON 字符串。", true);
   });
   $("btn-unescape").addEventListener("click", () => {
@@ -245,7 +256,7 @@
       // 若输入本身是 JSON 字符串字面量，先 parse 一次得到原串
       const once = JSON.parse(t);
       input.value = typeof once === "string" ? once : JSON.stringify(once);
-      updateInputCount(); save();
+      updateInputCount(); save(); renderInputHighlight();
       showAlert("已去转义。", true);
     } catch (e) { showAlert(errorWithLocation(e, input.value), false); }
   });
@@ -256,7 +267,7 @@
       author: { name: "you", site: "https://pages.github.com" },
       count: 42, price: 9.9, nothing: null
     }, null, 2);
-    updateInputCount(); doFormat(false);
+    updateInputCount(); renderInputHighlight(); doFormat(false);
   });
 
   $("btn-clear").addEventListener("click", () => {
@@ -265,7 +276,7 @@
     lastValue = null; lastText = "";
     $("st-status").textContent = "待处理"; $("st-output").textContent = "0";
     $("st-type").textContent = "-"; $("st-depth").textContent = "-"; $("st-keys").textContent = "-";
-    updateInputCount(); clearAlert(); save();
+    updateInputCount(); renderInputHighlight(); clearAlert(); save();
   });
 
   $("btn-copy").addEventListener("click", async () => {
@@ -294,7 +305,7 @@
     const f = e.target.files[0];
     if (!f) return;
     const r = new FileReader();
-    r.onload = () => { input.value = String(r.result || ""); updateInputCount(); doFormat(false); };
+    r.onload = () => { input.value = String(r.result || ""); updateInputCount(); renderInputHighlight(); doFormat(false); };
     r.readAsText(f);
     e.target.value = "";
   });
@@ -302,7 +313,7 @@
   $("btn-paste").addEventListener("click", async () => {
     try {
       input.value = await navigator.clipboard.readText();
-      updateInputCount(); doFormat(false);
+      updateInputCount(); renderInputHighlight(); doFormat(false);
     } catch (_) { showAlert("无法读取剪贴板，请用 Ctrl/Cmd+V 手动粘贴（浏览器权限限制）。", false); }
   });
 
@@ -313,7 +324,7 @@
       if (ev === "drop" && e.dataTransfer.files.length) {
         const f = e.dataTransfer.files[0];
         const r = new FileReader();
-        r.onload = () => { input.value = String(r.result || ""); updateInputCount(); doFormat(false); };
+        r.onload = () => { input.value = String(r.result || ""); updateInputCount(); renderInputHighlight(); doFormat(false); };
         r.readAsText(f);
       }
     });
@@ -330,8 +341,13 @@
     if (lastValue === null) { try { lastValue = parseInput(); renderTree(lastValue); } catch (_) { treeEl.textContent = "输入无效，无法预览树形。"; } }
   });
 
-  // 输入计数 + 快捷键
-  input.addEventListener("input", updateInputCount);
+  // 输入计数 + 快捷键 + 高亮刷新
+  let hlTimer = null;
+  input.addEventListener("input", () => {
+    updateInputCount();
+    clearTimeout(hlTimer);
+    hlTimer = setTimeout(renderInputHighlight, 60);
+  });
   input.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); doFormat(false); }
     // Tab 缩进支持
@@ -340,10 +356,37 @@
       const s = input.selectionStart, en = input.selectionEnd;
       input.value = input.value.slice(0, s) + "  " + input.value.slice(en);
       input.selectionStart = input.selectionEnd = s + 2;
-      updateInputCount();
+      updateInputCount(); renderInputHighlight();
     }
   });
 
+  // 粘贴 JSON 后自动格式化（无效内容则保留原样并提示）
+  input.addEventListener("paste", () => {
+    setTimeout(() => {
+      if (!input.value.trim()) return renderInputHighlight();
+      try {
+        const value = parseInput();
+        const indent = getIndent();
+        const text = indent === null ? JSON.stringify(value) : JSON.stringify(value, null, indent);
+        input.value = text;
+        updateInputCount(); save(); renderInputHighlight();
+        render(text, value);
+        $("st-status").textContent = "✅ 有效 JSON";
+        showAlert("已粘贴并自动格式化。", true);
+      } catch (e) {
+        renderInputHighlight();
+        showAlert(errorWithLocation(e, input.value), false);
+      }
+    }, 30);
+  });
+
+  // 输入框高亮滚动与滚动条占位同步
+  input.addEventListener("scroll", () => { hl.scrollTop = input.scrollTop; });
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(syncHlPadding).observe(input);
+  else window.addEventListener("resize", syncHlPadding);
+
   restore();
   updateInputCount();
+  renderInputHighlight();
+  syncHlPadding();
 })();
