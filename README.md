@@ -11,7 +11,7 @@
 
 | 工具 | 路径 | 功能 |
 |------|------|------|
-| 📦 JSON 格式化 | `tools/json-formatter.html` | 格式化 / 压缩 / 验证 + 行列定位 / 高亮 / 树形预览 / 键排序 / 转义与去转义 / 导入文件·拖拽·剪贴板 / 复制·下载 / localStorage 自动保存 |
+| 📦 JSON 格式化 | `tools/json-formatter.html` | 格式化 / 压缩 / 验证 + 高亮 / 树形预览 / 多段 JSON 自动分段 / 任意两段左右或上下双栏对比 / 同步滚动 / 键排序 / 转义与去转义 / 复制·下载 / localStorage 自动保存 |
 | 🔣 Base64 编解码 | `tools/base64.html` | 文本 ⇄ Base64（UTF-8 安全）/ URL-safe 模式 / 实时转换 / 文件转 Base64·DataURL·图片预览 / 下载还原 |
 | ⏰ 时间戳转换 | `tools/timestamp.html` | 时间戳 ⇄ 日期 / 秒毫秒自适应 / 常用时区 / ISO·UTC·本地多格式 / 实时时钟 / 今天零点快捷 |
 | 🔗 URL 编解码 | `tools/url-codec.html` | encodeURI / Component 双模式 / 实时转换 / Query 表格化编辑回拼 / URL 结构拆解 |

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/css/common.css?v=20260908f" />
+  <link rel="stylesheet" href="../assets/css/common.css?v=20260910b" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>" />
 </head>
 <body>
@@ -51,6 +51,7 @@
         </span>
       </div>
       <p>可粘贴、拖入 .json 文件。支持缩进选择、键排序、转义处理、树形预览，左右联动实时渲染。</p>
+      <p>支持一次输入多段 JSON，并用左右或上下双栏选择任意两份报文同步滚动对比。</p>
     </div>
 
     <div class="toolbar" role="toolbar" aria-label="JSON 操作">
@@ -107,10 +108,22 @@
           清空
         </button>
       </div>
+      <div class="json-layout-controls" role="group" aria-label="报文对比布局">
+        <span class="layout-label">布局</span>
+        <span class="segmented layout-segmented">
+          <button class="seg-btn active" id="layout-single" type="button" data-layout="single" title="单栏编辑与预览" aria-pressed="true">单栏</button>
+          <button class="seg-btn" id="layout-horizontal" type="button" data-layout="horizontal" title="左右对比两份 JSON" aria-pressed="false">左右双栏</button>
+          <button class="seg-btn" id="layout-vertical" type="button" data-layout="vertical" title="上下对比两份 JSON" aria-pressed="false">上下双栏</button>
+        </span>
+        <label class="sync-scroll-control" id="sync-scroll-control" hidden>
+          <input type="checkbox" id="sync-scroll" checked />
+          <span>同步滚动</span>
+        </label>
+      </div>
     </div>
 
-    <div class="workarea json-layout">
-      <section class="pane">
+    <div class="workarea json-layout" id="json-layout" data-layout="single">
+      <section class="pane source-pane">
         <div class="pane-header">
           <span class="pane-title">输入 JSON<em class="pane-sub">原文保持不变</em></span>
           <span class="actions">
@@ -139,12 +152,12 @@
         </div>
         <div id="json-input-wrap">
           <pre id="json-input-hl" aria-hidden="true"></pre>
-          <textarea id="json-input" placeholder='在此粘贴 JSON，例如：{"name":"webtools","ok":true}&#10;左侧原文保持不变，格式化结果只显示在右侧' spellcheck="false"></textarea>
+          <textarea id="json-input" placeholder='在此粘贴 JSON，例如：{"name":"webtools","ok":true}&#10;支持多段：{"id":1}&#10;{"id":2}&#10;左侧原文保持不变，格式化结果只显示在右侧' spellcheck="false"></textarea>
         </div>
         <div class="pane-footer drop-hint">💡 支持 Ctrl/Cmd + Enter 快捷格式化 · 输入自动保存在本地（localStorage）</div>
       </section>
 
-      <section class="pane">
+      <section class="pane result-pane">
         <div class="pane-header">
           <span class="segmented" role="tablist" aria-label="视图切换">
             <button class="seg-btn active" id="tab-text" role="tab" aria-selected="true">文本</button>
@@ -187,6 +200,26 @@
         <div class="output-wrap">
           <div id="json-output" class="json-output placeholder">格式化结果将显示在这里…</div>
           <div id="json-tree" class="tree" hidden></div>
+          <div id="json-compare" class="json-compare" hidden>
+            <section class="compare-panel">
+              <header class="compare-header">
+                <label for="compare-select-a">报文 A</label>
+                <select id="compare-select-a" class="select" aria-label="选择左侧或上方报文"></select>
+              </header>
+              <div class="compare-scroll" id="compare-scroll-a">
+                <pre class="compare-code placeholder" id="compare-code-a">请至少输入两段 JSON…</pre>
+              </div>
+            </section>
+            <section class="compare-panel">
+              <header class="compare-header">
+                <label for="compare-select-b">报文 B</label>
+                <select id="compare-select-b" class="select" aria-label="选择右侧或下方报文"></select>
+              </header>
+              <div class="compare-scroll" id="compare-scroll-b">
+                <pre class="compare-code placeholder" id="compare-code-b">请至少输入两段 JSON…</pre>
+              </div>
+            </section>
+          </div>
         </div>
       </section>
     </div>
@@ -202,6 +235,7 @@
 
     <p class="page-note">
       说明：验证失败时会定位错误位置（尽力给出行 / 列）；大文件（&gt;1MB）仍可处理但树形预览会自动截断以防卡顿。
+      多段输入时右侧按 <code>#序号</code> 分段展示，压缩输出为每行一段（NDJSON），复制 / 下载包含全部段落。
       新增工具只需在 <code>tools/</code> 下加一个 html 文件，并在首页加卡片即可，样式复用 <code>assets/css/common.css</code>。
     </p>
   </main>
@@ -232,6 +266,6 @@
       });
     })();
   </script>
-  <script src="../assets/js/json-formatter.js?v=20260908e"></script>
+  <script src="../assets/js/json-formatter.js?v=20260910b"></script>
 </body>
 </html>

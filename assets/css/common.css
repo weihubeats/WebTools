@@ -322,6 +322,10 @@ a:hover { text-decoration: underline; }
 /* JSON 双窗格：桌面端固定舒适视口高度 */
 .json-layout { align-items: stretch; }
 .json-layout .pane { height: clamp(500px, calc(100vh - 348px), 780px); }
+.json-layout[data-layout="horizontal"],
+.json-layout[data-layout="vertical"] { grid-template-columns: minmax(0, 1fr); }
+.json-layout[data-layout="horizontal"] .source-pane,
+.json-layout[data-layout="vertical"] .source-pane { display: none; }
 @media (max-width: 860px) {
   .json-layout .pane { height: auto; min-height: 440px; }
 }
@@ -338,6 +342,29 @@ a:hover { text-decoration: underline; }
 .json-main .statusbar { margin-bottom: 8px; padding: 8px 12px; }
 .json-main .page-note { display: none; }
 .json-main .json-layout .pane { height: clamp(480px, calc(100vh - 252px), 1200px); }
+.json-layout-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.layout-label { color: var(--muted); font-size: 12px; font-weight: 600; }
+.layout-segmented .seg-btn { padding: 4px 9px; font-size: 11.5px; }
+.sync-scroll-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.sync-scroll-control[hidden],
+.json-compare[hidden] { display: none !important; }
+.sync-scroll-control:has(input:checked) { color: var(--primary); }
+@media (max-width: 1120px) {
+  .json-layout-controls { order: 10; width: 100%; justify-content: flex-end; }
+}
 .pane-header {
   display: flex;
   justify-content: space-between;
@@ -489,6 +516,8 @@ mark.srch.current {
 #json-input-wrap textarea:focus-visible { outline: none; }
 .output-wrap { min-height: 420px; max-height: 640px; overflow: auto; }
 .json-layout .output-wrap { min-height: 0; max-height: none; flex: 1; }
+.json-layout[data-layout="horizontal"] .output-wrap,
+.json-layout[data-layout="vertical"] .output-wrap { overflow: hidden; }
 .output-wrap::-webkit-scrollbar, #json-input-wrap textarea::-webkit-scrollbar { width: 10px; height: 10px; }
 .output-wrap::-webkit-scrollbar-thumb, #json-input-wrap textarea::-webkit-scrollbar-thumb {
   background: var(--border-strong);
@@ -512,6 +541,82 @@ mark.srch.current {
   font: inherit;
   white-space: pre-wrap;
   word-break: break-word;
+}
+.json-compare {
+  height: 100%;
+  min-height: 0;
+  gap: 10px;
+  padding: 10px;
+  background: var(--surface);
+}
+.json-compare.layout-horizontal {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.json-compare.layout-vertical {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+.compare-panel {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.compare-header {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.compare-header label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.compare-header .select {
+  min-width: 0;
+  flex: 1;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.compare-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.compare-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.compare-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 3px solid transparent;
+  border-radius: 8px;
+  background-clip: content-box;
+}
+.compare-code {
+  box-sizing: border-box;
+  min-width: 100%;
+  width: max-content;
+  margin: 0;
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre;
+  color: var(--text);
+}
+.compare-code.placeholder { width: 100%; color: var(--muted); white-space: pre-wrap; }
+@media (max-width: 700px) {
+  .json-compare.layout-horizontal { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); }
 }
 .statusbar {
   display: flex;
@@ -590,6 +695,27 @@ mark.srch.current {
 .j-row { white-space: pre-wrap; word-break: break-word; padding: 1px 0; }
 .j-line { white-space: pre-wrap; word-break: break-word; }
 .j-more { color: var(--muted); font-size: 12px; padding: 4px 0; }
+
+/* 多段 JSON 的分段标题（文本视图与树形视图共用） */
+.j-doc-sep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.j-doc-sep.first { margin-top: 0; padding-top: 0; border-top: 0; }
+.j-doc-idx {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+.j-doc-meta { color: var(--muted); font-size: 12px; }
 
 /* JSON 错误卡片（粉底 + 红标题 + 修复按钮） */
 .j-err-card {
