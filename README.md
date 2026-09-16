@@ -21,6 +21,7 @@
 | 🔑 密码生成器 | `tools/password.html` | crypto 加密级随机 / 无偏采样 / 长度字符集批量可调 / 每类至少含1个 / 熵值强度评估 |
 | 📄 Markdown 预览 | `tools/markdown.html` | 手写零依赖解析 / 标题列表代码块表格引用 / 实时渲染 / HTML 复制导出 / localStorage 保存 |
 | 🖼️ 图片压缩 | `tools/image-compress.html` | canvas 本地压缩 / 最大宽高缩放 / 质量滑杆 / JPEG·WebP·PNG 转换 / 压缩率展示 |
+| 🧬 测试数据生成 | `tools/testdata.html` | UUID / 手机号 / 身份证等快捷造数 / 粘贴 Java 类或 JSON 骨架生成测试 JSON Body / 字段名启发式 / List·枚举·内部类 / 全本地 |
 
 ## 本地预览
 
