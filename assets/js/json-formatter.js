@@ -146,6 +146,32 @@
     return docs.length > 1 ? `✅ 有效 JSON · 共 ${docs.length} 段` : "✅ 有效 JSON";
   }
 
+  // 展开字符串值里嵌套的转义 JSON：{"a":"{\"b\":1}"} -> {"a":{"b":1}}
+  // 深度/长度上限防病态输入；解析失败保留原字符串
+  const MAX_NEST_DEPTH = 20;
+  function expandNestedJson(value, depth) {
+    depth = depth || 0;
+    if (depth > MAX_NEST_DEPTH) return value;
+    if (Array.isArray(value)) return value.map((v) => expandNestedJson(v, depth + 1));
+    if (value && typeof value === "object") {
+      const out = {};
+      Object.keys(value).forEach((k) => { out[k] = expandNestedJson(value[k], depth + 1); });
+      return out;
+    }
+    if (typeof value === "string") {
+      const t = value.trim();
+      if ((t[0] === "{" || t[0] === "[") && t.length <= 200000) {
+        try { return expandNestedJson(JSON.parse(t), depth + 1); } catch (_) { /* 非法则保留 */ }
+      }
+    }
+    return value;
+  }
+
+  // 格式化入口统一走这里：解析 + 展开嵌套转义
+  function parseAndExpand() {
+    return parseInput().map((d) => expandNestedJson(d));
+  }
+
   function sortKeysDeep(value) {
     if (Array.isArray(value)) return value.map(sortKeysDeep);
     if (value && typeof value === "object") {
@@ -810,7 +836,7 @@
       if (!raw) { resetRightToPlaceholder(); save(); return; }
       if (raw.length > 500000) { $("st-status").textContent = "⚠️ 过大，请手动格式化"; return; }
       try {
-        const docs = parseInput();
+        const docs = parseAndExpand();
         render(stringifyDocs(docs, getIndent()), docs, { keepTab: true });
         $("st-status").textContent = okStatus(docs);
         save();
@@ -824,7 +850,7 @@
   // ---------- 动作（只写右侧，不动左侧，不弹通知） ----------
   function doFormat(sorted) {
     try {
-      let docs = parseInput();
+      let docs = parseAndExpand();
       if (sorted) docs = docs.map(sortKeysDeep);
       render(stringifyDocs(docs, getIndent()), docs);
       $("st-status").textContent = okStatus(docs);
@@ -847,7 +873,7 @@
 
   function doValidate() {
     try {
-      const docs = parseInput();
+      const docs = parseAndExpand();
       const { maxDepth, keys } = docsStats(docs);
       $("st-status").textContent = okStatus(docs);
       $("st-type").textContent = docsType(docs);
@@ -878,11 +904,12 @@
     try {
       const once = JSON.parse(t);
       const display = typeof once === "string" ? once : JSON.stringify(once);
-      // 去转义后若仍是合法 JSON（含多段）则格式化显示，否则按原串显示
+      // 去转义后若仍是合法 JSON（含多段）则格式化显示（并展开嵌套转义），否则按原串显示
       const docs = tryParseDocs(display);
       if (docs) {
-        render(stringifyDocs(docs, getIndent()), docs);
-        $("st-status").textContent = okStatus(docs);
+        const expanded = docs.map((d) => expandNestedJson(d));
+        render(stringifyDocs(expanded, getIndent()), expanded);
+        $("st-status").textContent = okStatus(expanded);
         return;
       }
       lastText = display;
@@ -1180,7 +1207,7 @@
   $("tab-tree").addEventListener("click", () => {
     $("tab-tree").classList.add("active"); $("tab-text").classList.remove("active");
     output.hidden = true; treeEl.hidden = false;
-    if (!lastDocs) { try { lastDocs = parseInput(); renderTree(lastDocs); } catch (_) { treeEl.textContent = "输入无效，无法预览树形。"; } }
+    if (!lastDocs) { try { lastDocs = parseAndExpand(); renderTree(lastDocs); } catch (_) { treeEl.textContent = "输入无效，无法预览树形。"; } }
   });
 
   // ---------- 搜索事件绑定（左右独立，Enter 下一个 / Shift+Enter 上一个 / Esc 关闭） ----------
@@ -1255,7 +1282,7 @@
       if (!input.value.trim()) return renderInputHighlight();
       renderInputHighlight();
       try {
-        const docs = parseInput();
+        const docs = parseAndExpand();
         render(stringifyDocs(docs, getIndent()), docs);
         $("st-status").textContent = okStatus(docs);
         save();
@@ -1269,7 +1296,7 @@
   $("sel-indent").addEventListener("change", () => {
     if (!input.value.trim() || !lastText) return;
     try {
-      const docs = parseInput();
+      const docs = parseAndExpand();
       render(stringifyDocs(docs, getIndent()), docs, { keepTab: true });
       $("st-status").textContent = okStatus(docs);
     } catch (e) {
@@ -1298,7 +1325,7 @@
   // 启动时若左侧有存档内容，右侧直接跟随渲染一次
   if (input.value.trim()) {
     try {
-      const docs = parseInput();
+      const docs = parseAndExpand();
       render(stringifyDocs(docs, getIndent()), docs, { keepTab: true });
       $("st-status").textContent = okStatus(docs);
     } catch (_) { /* 存档无效则保持占位，不打扰 */ }
