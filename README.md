@@ -22,6 +22,8 @@
 | 📄 Markdown 预览 | `tools/markdown.html` | 手写零依赖解析 / 标题列表代码块表格引用 / 实时渲染 / HTML 复制导出 / localStorage 保存 |
 | 🖼️ 图片压缩 | `tools/image-compress.html` | canvas 本地压缩 / 最大宽高缩放 / 质量滑杆 / JPEG·WebP·PNG 转换 / 压缩率展示 |
 | 🧬 测试数据生成 | `tools/testdata.html` | UUID / 手机号 / 身份证等快捷造数 / 粘贴 Java 类或 JSON 骨架生成测试 JSON Body / 字段名启发式 / List·枚举·内部类 / 全本地 |
+| 🔤 大小写 / 命名格式转换 | `tools/case.html` | camelCase · PascalCase · snake_case · CONSTANT_CASE · kebab-case · Train-Case · dot.case · path/case · Title · Sentence 等 12 种格式实时互转 / 驼峰与分隔符自动分词 / 按行对应 / 逐行·全部复制 |
+| 🧾 YAML 格式化 / 转换 | `tools/yaml.html` | YAML 格式化 / 校验（行号报错）/ YAML ⇄ Properties 双向转换 / 数组风格 list[0]·list.0 可选 / 块标量·流式集合·锚点别名 / 零依赖手写解析器 |
 
 ## 本地预览
 
@@ -43,7 +45,8 @@ python3 -m http.server 8080
 
 ## 新增工具规范
 
-1. 在 `tools/` 下新建 `xxx.html`，引用 `../assets/css/common.css`。
+1. 在 `tools/` 下新建 `xxx.html`，引用 `../assets/css/common.css` 与 `../assets/css/nav.css`；头部放 `<div id="site-nav"></div>` + `site-nav.js`（全站导航由 `assets/js/site-nav.js` 统一渲染，工具清单也改它）。
 2. JS 放 `assets/js/xxx.js`，保持零依赖。
-3. 在 `index.html` 的 `.tool-grid` 里加一张卡片。
-4. 全本地运行，不要引入后端接口；如需 CDN 请注明可离线降级。
+3. 在 `index.html` 的 `.grid` 里加一张 `<a class="card">`（带 `data-cat` 归入分类 Tabs、`data-hot="1"` 上热门、`data-kw` 补搜索别名），并在导航栏对应 `.dd-menu` 里加一条入口。
+4. 首页样式/逻辑在 `assets/css/home.css` 与 `assets/js/home.js`，与工具页相互独立。
+5. 全本地运行，不要引入后端接口；如需 CDN 请注明可离线降级。

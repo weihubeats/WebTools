@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>大小写 / 命名格式转换 · WebTools</title>
+  <meta name="description" content="免费在线大小写与命名格式转换：camelCase、PascalCase、snake_case、kebab-case、CONSTANT_CASE 等 12 种格式实时互转，支持驼峰自动分词，全本地运行。" />
+  <script>try{var _t=localStorage.getItem('webtools.theme');if(_t==='dark'||(!_t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark';}catch(_e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/common.css?v=20260925a" />
+  <link rel="stylesheet" href="../assets/css/nav.css?v=20260925a" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔤</text></svg>" />
+</head>
+<body>
+  <!-- ============ 顶部导航（site-nav.js 渲染） ============ -->
+  <div id="site-nav"></div>
+  <script src="../assets/js/site-nav.js?v=20260925a"></script>
+
+  <main class="container">
+    <div class="page-title">
+      <div class="title-row">
+        <span class="title-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+        </span>
+        <h1>大小写 / 命名格式转换</h1>
+        <span class="badge-secure">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          全本地解析，不上传服务器
+        </span>
+      </div>
+      <p>camelCase / PascalCase / snake_case / kebab-case 等 12 种命名格式实时互转，驼峰边界自动分词。</p>
+    </div>
+
+    <div class="toolbar" role="toolbar" aria-label="转换操作">
+      <div class="tb-group" role="group" aria-label="核心动作">
+        <button class="btn primary" id="btn-convert">转换
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+        <button class="btn ghost" id="btn-sample">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          示例
+        </button>
+      </div>
+      <div class="tb-divider" aria-hidden="true"></div>
+      <div class="tb-group" role="group" aria-label="转换选项">
+        <label class="indent-label"><input type="checkbox" id="chk-live" checked /> 实时转换</label>
+      </div>
+      <span class="spacer"></span>
+      <div class="tb-group" role="group" aria-label="辅助动作">
+        <button class="btn ghost danger" id="btn-clear">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          清空
+        </button>
+      </div>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <div class="workarea">
+      <section class="pane">
+        <div class="pane-header">
+          <span class="pane-title">输入文本<em class="pane-sub">每行一个词 / 短语</em></span>
+          <span class="actions">
+            <button class="btn small" id="btn-copy-in">复制</button>
+          </span>
+        </div>
+        <textarea id="ta-in" class="tall case-input" placeholder="在此输入，例如：&#10;user_name&#10;userName&#10;USER-NAME&#10;http response code&#10;GET /api/UserInfo" spellcheck="false"></textarea>
+      </section>
+      <section class="pane">
+        <div class="pane-header">
+          <span class="pane-title">格式转换结果<em class="pane-sub" id="case-sub">12 种格式</em></span>
+          <span class="actions">
+            <button class="btn small" id="btn-copy-all">复制全部</button>
+          </span>
+        </div>
+        <div id="case-results" class="case-results"></div>
+      </section>
+    </div>
+
+    <div class="statusbar">
+      <span class="st-item">行&nbsp;<b id="st-lines">0</b></span>
+      <span class="st-item">字符&nbsp;<b id="st-chars">0</b></span>
+      <span class="st-item">分词&nbsp;<b id="st-words">0</b></span>
+      <span class="st-item">状态&nbsp;<b id="st-status">待处理</b></span>
+    </div>
+
+    <p class="page-note">
+      说明：分词规则 = 驼峰边界（<code>aB</code> / <code>ABc</code>）+ 分隔符（空格 <code>_</code> <code>-</code> <code>.</code> <code>/</code> <code>:</code>）；
+      中文与数字原样保留。结果按行对应，多行输入每行独立转换。
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行</div>
+  </footer>
+
+  <script>
+    (function(){var tg=document.getElementById('theme-toggle');if(tg)tg.addEventListener('click',function(){var d=document.documentElement;var dark=d.dataset.theme!=='dark';if(dark)d.dataset.theme='dark';else delete d.dataset.theme;try{localStorage.setItem('webtools.theme',dark?'dark':'light');}catch(e){}})})();
+  </script>
+  <script src="../assets/js/case.js?v=20260925a"></script>
+</body>
+</html>

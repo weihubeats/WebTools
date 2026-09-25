@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAML 格式化 / Properties 转换 · WebTools</title>
+  <meta name="description" content="支持 YAML 与 Properties 双向实时无损转换，语法校验与行号报错，全本地解析。" />
+  <script>try{var _t=localStorage.getItem('webtools.theme');if(_t==='dark'||(!_t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark';}catch(_e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/common.css?v=20260925c" />
+  <link rel="stylesheet" href="../assets/css/nav.css?v=20260925a" />
+  <link rel="stylesheet" href="../assets/css/yaml.css?v=20260925c" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧾</text></svg>" />
+</head>
+<body>
+  <!-- ============ 顶部导航（与全站一致的扁平工具导航） ============ -->
+    <!-- ============ 顶部导航（site-nav.js 渲染） ============ -->
+  <div id="site-nav"></div>
+  <script src="../assets/js/site-nav.js?v=20260925a"></script>
+
+  <main class="wrap">
+    <!-- ============ 标题 ============ -->
+    <section class="hero">
+      <h1>YAML 格式化 / Properties 转换</h1>
+      <p>支持 YAML 与 Properties 双向实时无损转换，全本地解析。</p>
+    </section>
+
+    <!-- ============ 控制栏 ============ -->
+    <div class="ctl" role="toolbar" aria-label="工具控制面板">
+      <div class="tabs" role="tablist" aria-label="核心模式">
+        <button class="tab active" id="tab-format" data-mode="format" role="tab" aria-selected="true">YAML 格式化</button>
+        <button class="tab" id="tab-convert" data-mode="convert" role="tab" aria-selected="false">属性转换</button>
+        <button class="tab" id="tab-validate" data-mode="validate" role="tab" aria-selected="false">语法校验</button>
+      </div>
+
+      <div class="dir-chip" id="dir-chip" title="点击切换转换方向">
+        <span id="dir-text">YAML → Properties</span>
+        <button type="button" id="btn-dir-flip" title="反转方向" aria-label="反转转换方向">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
+        </button>
+      </div>
+
+      <div class="ctl-sep" aria-hidden="true"></div>
+
+      <div class="params">
+        <label class="param">缩进
+          <select id="sel-indent" class="sel">
+            <option value="2" selected>2 空格</option>
+            <option value="4">4 空格</option>
+          </select>
+        </label>
+        <label class="param">数组风格
+          <select id="sel-array" class="sel" title="YAML 数组转 Properties 的键风格">
+            <option value="index" selected>list[0]</option>
+            <option value="dot">list.0</option>
+          </select>
+        </label>
+        <label class="switch" title="输入时自动实时转换">
+          <input type="checkbox" id="chk-live" checked />
+          <span class="track"></span>
+          <span>实时转换</span>
+        </label>
+      </div>
+
+      <div class="ctl-actions">
+        <button class="btn-ghost" id="btn-sample">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          填入示例
+        </button>
+        <button class="btn-ghost" id="btn-clear">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          清空
+        </button>
+        <button class="btn-ghost" id="btn-swap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
+          一键互换
+        </button>
+      </div>
+    </div>
+
+    <!-- ============ 双栏视口 ============ -->
+    <div class="vp" id="vp">
+      <!-- 左：输入 -->
+      <section class="pane" id="pane-in">
+        <div class="pane-head">
+          <span class="pane-title">输入 <em class="lang-chip" id="in-lang">YAML</em></span>
+          <span class="drop-ico" id="drop-ico" title="支持拖入 .yaml / .yml / .properties 文件">⇪</span>
+          <div class="pane-actions">
+            <button class="btn-xs primary" id="btn-format-now" title="切换到 YAML 格式化并立即执行（Ctrl/Cmd + Enter）">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="13" y2="18"/></svg>
+              格式化
+            </button>
+            <button class="btn-xs" id="btn-paste">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+              粘贴
+            </button>
+            <button class="btn-xs" id="btn-clear-in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              清空
+            </button>
+          </div>
+        </div>
+        <div class="ed">
+          <div class="gutter" id="gut-in" aria-hidden="true"><div class="gutter-inner" id="gut-in-inner"></div></div>
+          <div class="code-wrap">
+            <pre id="hl-in" aria-hidden="true"></pre>
+            <textarea id="ta-in" wrap="off" spellcheck="false" placeholder="在此粘贴 YAML 或 Properties，或把文件拖进来…&#10;server:&#10;  port: 8080&#10;  hosts:&#10;    - 10.0.0.1"></textarea>
+          </div>
+        </div>
+        <div class="pane-foot">💡 拖入文件自动识别格式 · Ctrl/Cmd + Enter 立即执行 · 输入保存在本地 localStorage</div>
+      </section>
+
+      <!-- 中间：交换 -->
+      <div class="vp-div">
+        <button class="swap-btn" id="btn-exchange" title="交换输入 / 输出并反转转换方向" aria-label="交换输入输出">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
+        </button>
+      </div>
+
+      <!-- 右：输出 -->
+      <section class="pane" id="pane-out">
+        <div class="pane-head">
+          <span class="pane-title">输出结果 <em class="lang-chip" id="out-lang">YAML</em></span>
+          <div class="pane-actions">
+            <button class="btn-xs" id="btn-copy-out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              一键复制
+            </button>
+            <button class="btn-xs" id="btn-download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              导出
+            </button>
+            <button class="btn-xs" id="btn-full" title="全屏预览（Esc 退出）">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+              全屏
+            </button>
+          </div>
+        </div>
+        <div class="ed">
+          <div class="gutter" id="gut-out" aria-hidden="true"><div class="gutter-inner" id="gut-out-inner"></div></div>
+          <div class="code-wrap">
+            <pre id="hl-out" aria-hidden="true"></pre>
+            <textarea id="ta-out" wrap="off" spellcheck="false" readonly placeholder="结果将显示在这里…"></textarea>
+          </div>
+        </div>
+        <div class="pane-foot">输出为只读视图 · 可直接复制或导出对应后缀文件</div>
+      </section>
+    </div>
+
+    <!-- ============ 状态栏 ============ -->
+    <div class="statusbar" role="status">
+      <span class="st-left">
+        <i class="st-dot" id="st-dot"></i>
+        <span class="st-status" id="st-status">等待输入</span>
+        <span class="st-msg" id="st-msg"></span>
+      </span>
+      <span class="st-right">
+        输入: <b id="st-in">0</b> 字符 &nbsp;|&nbsp; 输出: <b id="st-out">0</b> 字符 &nbsp;|&nbsp; 模式: <b id="st-mode">YAML 格式化</b>
+      </span>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <a href="../index.html">← 返回工具箱首页</a> · WebTools · 全本地运行 · MIT License
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../assets/js/yaml.js?v=20260925c"></script>
+</body>
+</html>
