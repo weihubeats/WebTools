@@ -4,16 +4,214 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>时间戳转换 · WebTools</title>
-  <meta name="description" content="免费在线 Unix 时间戳转换：时间戳 ⇄ 日期、毫秒/秒自适应、常用时区、ISO/UTC/本地格式，全本地运行。" />
+  <meta name="description" content="免费在线 Unix 时间戳转换：时间戳 ⇄ 日期、毫秒/秒自适应、常用时区、ISO/UTC/本地格式、一键复制、未来时间戳计算，全本地运行。" />
   <script>try{var _t=localStorage.getItem('webtools.theme');if(_t==='dark'||(!_t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark';}catch(_e){}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/css/common.css?v=20260925a" />
+  <link rel="stylesheet" href="../assets/css/common.css?v=20261028ts" />
   <link rel="stylesheet" href="../assets/css/nav.css?v=20260925a" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>" />
+  <style>
+    .ts-page { --ts-mono: var(--font-mono); }
+
+    /* 顶部时钟：每项独立清晰的复制按钮 */
+    .ts-clock { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+    .ts-clock .ts-clock-item {
+      position: relative;
+      flex: 1 1 210px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 9px 11px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+    .ts-clock .k { font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .02em; padding-right: 74px; line-height: 20px; }
+    .ts-clock .v { font-size: 15px; font-weight: 600; font-family: var(--ts-mono); word-break: break-all; letter-spacing: .2px; }
+    .ts-clock .v.sm { font-size: 13px; font-weight: 500; }
+
+    /* 小复制按钮：边框 + 底色，与数值明确分隔 */
+    .ts-copy-small {
+      position: absolute;
+      top: 7px;
+      right: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      cursor: pointer;
+      transition: color .15s var(--ease), background .15s var(--ease), border-color .15s var(--ease);
+    }
+    .ts-copy-small .ic { width: 12px; height: 12px; }
+    .ts-copy-small:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-soft); }
+    .ts-copy-small:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .ts-copy-small span { display: none; }
+    .ts-copy-small:hover span,
+    .ts-copy-small:focus-visible span,
+    .ts-clock-item:hover .ts-copy-small span,
+    .ts-copy-small.ok span { display: inline; }
+    .ts-clock-item.ok .ts-copy-small,
+    .ts-copy-small.ok { color: var(--success); border-color: var(--success-border); background: var(--success-soft); }
+
+    /* 未来 / 过去时间戳 */
+    .ts-offset-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+    .ts-offset-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ts-offset-custom { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+    .ts-offset-custom .field { width: 84px; padding: 5px 8px; font-size: 13px; text-align: center; }
+    .ts-offset-custom select { padding: 6px 28px 6px 10px; }
+    .ts-offset-list { display: flex; flex-direction: column; gap: 6px; }
+    .ts-offset-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      background: var(--surface);
+      flex-wrap: wrap;
+    }
+    .ts-offset-row .lbl {
+      font-size: 12px; font-weight: 700;
+      min-width: 66px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      text-align: center;
+    }
+    .ts-offset-row .num { font-family: var(--ts-mono); font-size: 14px; font-weight: 600; }
+    .ts-offset-row .date { font-family: var(--ts-mono); font-size: 12.5px; color: var(--muted); flex: 1 1 150px; min-width: 0; word-break: break-all; }
+    .ts-offset-actions { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+    /* 秒 / 毫秒按钮：单位常驻，避免「已复制」把单位顶掉导致分不清复制了什么 */
+    .ts-copy.ts-copy-unit { padding: 4px 9px 4px 8px; gap: 6px; min-width: 56px; justify-content: center; }
+    .ts-copy-state { display: inline-flex; align-items: center; }
+    .ts-copy-unit .ts-copy-label { font-family: var(--ts-mono); font-weight: 700; letter-spacing: .02em; }
+    .ts-copy-unit.ok .ts-copy-label { color: var(--success); }
+    .ts-del {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px;
+      font-size: 12px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: color .15s var(--ease), background .15s var(--ease), border-color .15s var(--ease);
+    }
+    .ts-del:hover { color: var(--error); background: var(--error-soft); border-color: var(--error-border); }
+    .ts-del:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .ts-offset-empty { font-size: 12.5px; color: var(--muted); padding: 2px 0; }
+
+    /* 转换结果卡片 */
+    .ts-results { display: flex; flex-direction: column; gap: 2px; }
+    .ts-results.is-empty {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 110px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 16px;
+    }
+    .ts-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 4px 6px 10px;
+      border-bottom: 1px solid var(--border-soft);
+      min-height: 40px;
+      border-radius: 8px;
+      transition: background .15s var(--ease);
+    }
+    .ts-row:last-child { border-bottom: 0; }
+    .ts-row:hover { background: var(--surface); }
+    .ts-row .lbl { font-size: 12px; color: var(--muted); min-width: 76px; flex-shrink: 0; }
+    .ts-row .val {
+      flex: 1; min-width: 0;
+      font-family: var(--ts-mono);
+      font-size: 13px;
+      word-break: break-all;
+      user-select: all;
+      line-height: 1.5;
+    }
+    .ts-row.hl .val { font-size: 15px; font-weight: 600; }
+    .ts-row.hl { background: var(--primary-soft); }
+
+    /* 结果行复制按钮：默认描边弱显示，悬停整行时变主色，复制成功变绿 */
+    .ts-copy {
+      display: inline-flex; align-items: center; gap: 5px;
+      flex-shrink: 0;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      line-height: 1.4;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .15s var(--ease), background .15s var(--ease), border-color .15s var(--ease);
+    }
+    .ts-copy .ic { width: 13px; height: 13px; flex-shrink: 0; }
+    .ts-copy:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-soft); }
+    .ts-copy:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .ts-copy.ok { color: var(--success); border-color: var(--success-border); background: var(--success-soft); }
+    .ts-offset-row .ts-copy { padding: 4px 9px; }
+
+    /* 右下角浮层提示：复制/成功反馈，不再占据工具栏下方版面 */
+    .ts-toast {
+      position: fixed;
+      right: 20px;
+      bottom: 24px;
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: min(420px, calc(100vw - 32px));
+      padding: 10px 15px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--success);
+      border-radius: 10px;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transform: translateY(10px) scale(.98);
+      pointer-events: none;
+      transition: opacity .2s var(--ease), transform .2s var(--ease);
+    }
+    .ts-toast .ic { width: 15px; height: 15px; color: var(--success); flex-shrink: 0; }
+    .ts-toast span { word-break: break-all; font-family: var(--ts-mono); font-size: 12.5px; }
+    .ts-toast.show { opacity: 1; transform: translateY(0) scale(1); }
+    .ts-toast.error { border-left-color: var(--error); color: var(--error); }
+    .ts-toast.error span { font-family: inherit; font-size: 13px; }
+
+    /* 输入错误：内联提示，紧贴输入框 */
+    .alert.is-inline { max-height: 240px; opacity: 1; padding: 8px 12px; margin: 0; }
+
+    /* 待选中的输入高亮：转换后给输入框一个轻微反馈 */
+    .field.is-invalid { border-color: var(--error-border); }
+    @keyframes tsFlash { 0% { box-shadow: 0 0 0 0 var(--primary-soft); } 100% { box-shadow: 0 0 0 3px var(--primary-soft); } }
+    .ts-pane-flash { animation: tsFlash .45s var(--ease); }
+
+    @media (max-width: 860px) {
+      .ts-clock .ts-clock-item { flex: 1 1 100%; }
+      .ts-row .lbl { min-width: 68px; }
+      .ts-offset-row .date { flex: 1 1 100%; order: 5; }
+    }
+  </style>
 </head>
-<body>
+<body class="ts-page">
     <!-- ============ 顶部导航（site-nav.js 渲染） ============ -->
   <div id="site-nav"></div>
   <script src="../assets/js/site-nav.js?v=20260925a"></script>
@@ -30,21 +228,73 @@
           全本地解析，不上传服务器
         </span>
       </div>
-      <p>Unix 时间戳 ⇄ 日期字符串，秒 / 毫秒自适应，支持常用时区切换。</p>
+      <p>Unix 时间戳 ⇄ 日期字符串，秒 / 毫秒自适应，支持常用时区切换，结果一键复制。</p>
     </div>
 
+    <!-- ============ 现在 ============ -->
     <section class="pane" style="margin:12px 0">
-      <div class="pane-header"><span class="pane-title">现在<em class="pane-sub">每秒刷新</em></span>
+      <div class="pane-header"><span class="pane-title">现在<em class="pane-sub">每秒刷新 · 每项可单独复制</em></span>
         <span class="actions"><button class="btn small" id="btn-now">用当前时间填充</button></span>
       </div>
-      <div class="now-grid">
-        <div><div class="k">秒级时间戳</div><div class="v" id="now-s">-</div></div>
-        <div><div class="k">毫秒级时间戳</div><div class="v" id="now-ms">-</div></div>
-        <div><div class="k">本地时间</div><div class="v" id="now-local">-</div></div>
-        <div><div class="k">UTC</div><div class="v" id="now-utc">-</div></div>
+      <div class="ts-clock now-grid" id="now-grid">
+        <div class="ts-clock-item" data-copied-holder data-copy-src="now-s">
+          <span class="k">秒级时间戳</span>
+          <span class="v" id="now-s">-</span>
+          <button type="button" class="ts-copy-small ts-copy" data-copy-src="now-s" aria-label="复制秒级时间戳"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制</span></button>
+        </div>
+        <div class="ts-clock-item" data-copied-holder data-copy-src="now-ms">
+          <span class="k">毫秒级时间戳</span>
+          <span class="v" id="now-ms">-</span>
+          <button type="button" class="ts-copy-small ts-copy" data-copy-src="now-ms" aria-label="复制毫秒级时间戳"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制</span></button>
+        </div>
+        <div class="ts-clock-item" data-copied-holder data-copy-src="now-local">
+          <span class="k">本地时间</span>
+          <span class="v sm" id="now-local">-</span>
+          <button type="button" class="ts-copy-small ts-copy" data-copy-src="now-local" aria-label="复制本地时间"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制</span></button>
+        </div>
+        <div class="ts-clock-item" data-copied-holder data-copy-src="now-utc">
+          <span class="k">UTC</span>
+          <span class="v sm" id="now-utc">-</span>
+          <button type="button" class="ts-copy-small ts-copy" data-copy-src="now-utc" aria-label="复制 UTC 时间"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制</span></button>
+        </div>
       </div>
     </section>
 
+    <!-- ============ 未来 / 过去时间戳 ============ -->
+    <section class="pane" style="margin:0 0 14px">
+      <div class="pane-header"><span class="pane-title">未来 / 过去时间戳<em class="pane-sub">基于当前时间推算</em></span></div>
+      <div class="ts-offset-body">
+        <div class="ts-offset-quick" id="offset-quick">
+          <button class="btn small" data-offset-min="30">+30 分钟</button>
+          <button class="btn small" data-offset-min="60">+1 小时</button>
+          <button class="btn small" data-offset-min="120">+2 小时</button>
+          <button class="btn small" data-offset-min="1440">+1 天</button>
+          <button class="btn small" data-offset-min="10080">+7 天</button>
+          <button class="btn small" data-offset-min="43200">+30 天</button>
+          <button class="btn small" data-offset-min="-30">-30 分钟</button>
+          <button class="btn small" data-offset-min="-1440">-1 天</button>
+        </div>
+        <div class="ts-offset-custom">
+          <span>自定义</span>
+          <label class="indent-label" for="offset-num" style="gap:6px">
+            <input type="number" id="offset-num" class="field" value="30" min="0" step="1" />
+          </label>
+          <select id="offset-unit" class="select" aria-label="时间单位">
+            <option value="sec">秒</option>
+            <option value="min" selected>分钟</option>
+            <option value="hour">小时</option>
+            <option value="day">天</option>
+          </select>
+          <button class="btn small primary" id="btn-offset-add">计算</button>
+          <button class="btn small ghost" id="btn-offset-reset">重置</button>
+        </div>
+        <div class="ts-offset-list" id="offset-list">
+          <div class="ts-offset-empty">点击上方预设，或输入自定义时长，即可得到秒级 / 毫秒级时间戳和对应时间。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 工具栏 ============ -->
     <div class="toolbar" role="toolbar" aria-label="时间戳操作">
       <div class="tb-group" role="group" aria-label="格式设置">
         <label class="indent-label" for="sel-tz">时区
@@ -73,10 +323,10 @@
       </div>
     </div>
 
-    <div id="alert" class="alert"></div>
+    <div id="alert" class="alert" role="status" aria-live="polite"></div>
 
     <div class="workarea">
-      <section class="pane">
+      <section class="pane" id="pane-t2d">
         <div class="pane-header"><span class="pane-title">时间戳 → 日期</span>
           <span class="actions"><button class="btn small primary" id="btn-t2d">转换 →</button></span>
         </div>
@@ -87,18 +337,18 @@
             <button class="btn small" data-ts="now-ms">当前（毫秒）</button>
             <button class="btn small" data-ts="day">今天 00:00</button>
           </div>
-          <div id="out-date" class="result-box">转换结果显示在这里…</div>
+          <div id="out-date" class="ts-results is-empty">转换后结果显示在这里</div>
         </div>
       </section>
 
-      <section class="pane">
+      <section class="pane" id="pane-d2t">
         <div class="pane-header"><span class="pane-title">日期 → 时间戳</span>
           <span class="actions"><button class="btn small primary" id="btn-d2t">← 转换</button></span>
         </div>
         <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
           <input id="in-date" class="field" placeholder="输入日期，如 2026-09-07 12:00:00 或 ISO 格式" />
-          <label style="font-size:13px;color:var(--muted)">或用选择器 <input type="datetime-local" id="in-picker" class="field" style="margin-top:4px" /></label>
-          <div id="out-ts" class="result-box">转换结果显示在这里…</div>
+          <label style="font-size:13px;color:var(--muted)">或用选择器 <input type="datetime-local" id="in-picker" class="field" style="margin-top:4px;width:100%" /></label>
+          <div id="out-ts" class="ts-results is-empty">转换后结果显示在这里</div>
         </div>
       </section>
     </div>
@@ -116,6 +366,6 @@
   <script>
     (function(){var tg=document.getElementById('theme-toggle');if(tg)tg.addEventListener('click',function(){var d=document.documentElement;var dark=d.dataset.theme!=='dark';if(dark)d.dataset.theme='dark';else delete d.dataset.theme;try{localStorage.setItem('webtools.theme',dark?'dark':'light');}catch(e){}})})();
   </script>
-  <script src="../assets/js/timestamp.js"></script>
+  <script src="../assets/js/timestamp.js?v=20261028ts"></script>
 </body>
 </html>
