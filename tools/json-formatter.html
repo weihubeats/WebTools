@@ -9,11 +9,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/css/common.css?v=20261028d" />
+  <link rel="stylesheet" href="../assets/css/common.css?v=20261028h" />
   <link rel="stylesheet" href="../assets/css/nav.css?v=20261028c" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>" />
 </head>
-<body>
+<body class="tool-page">
     <!-- ============ 顶部导航（site-nav.js 渲染） ============ -->
   <div id="site-nav"></div>
   <script src="../assets/js/site-nav.js?v=20260925a"></script>
@@ -130,6 +130,7 @@
           </button>
         </div>
         <div id="json-input-wrap">
+          <div id="json-line-nums" class="line-nums" aria-hidden="true"></div>
           <pre id="json-input-hl" aria-hidden="true"></pre>
           <textarea id="json-input" placeholder='在此粘贴 JSON，例如：{"name":"webtools","ok":true}&#10;支持多段：{"id":1}&#10;{"id":2}&#10;左侧原文保持不变，格式化结果只显示在右侧' spellcheck="false"></textarea>
         </div>
@@ -252,6 +253,6 @@
       });
     })();
   </script>
-  <script src="../assets/js/json-formatter.js?v=20261028d"></script>
+  <script src="../assets/js/json-formatter.js?v=20261028h"></script>
 </body>
 </html>

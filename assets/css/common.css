@@ -67,6 +67,15 @@ a { color: var(--primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 .container { width: 100%; margin: 0 auto; padding: 0 16px; }
 
+/* 工具页纵向铺满视口：主内容吃掉剩余高度，页脚始终贴底（内容超高时跟随滚动） */
+.tool-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.tool-page > footer,
+.tool-page > .site-footer { margin-top: auto; }
+
 /* 顶栏：毛玻璃 + 底部分隔 + 轻阴影 */
 .site-header {
   background: var(--header-bg);
@@ -330,9 +339,10 @@ a:hover { text-decoration: underline; }
 /* 工具栏紧凑样式见 .toolbar.toolbar-dense（通用类，其他工具页也可复用） */
 .json-main .json-layout-controls { gap: 6px; }
 .json-main .layout-segmented .seg-btn { padding: 4px 9px; font-size: 11.5px; }
-.json-main .workarea { margin-bottom: 8px; gap: 10px; }
+.json-main .workarea { margin-bottom: 4px; gap: 10px; }
 /* JSON 页左右留白略宽一点，编辑区更透气 */
-main.json-main.container { padding: 0 clamp(12px, 1.6vw, 28px); }
+main.json-main.container { padding: 0 clamp(12px, 1.6vw, 28px); flex: 1 1 auto; min-height: 0; }
+/* 工作区与页脚间的留白收紧，状态栏尽量贴近视口底部 */
 /* 状态栏并入工作区卡片底部，不再单独占一条 */
 .json-main .statusbar {
   grid-column: 1 / -1;
@@ -398,16 +408,23 @@ main.json-main.container { padding: 0 clamp(12px, 1.6vw, 28px); }
 .json-main .json-layout[data-layout="single"] .pane-header { height: 40px; box-sizing: border-box; }
 .json-main .json-layout[data-layout="single"] .pane-title { font-size: 11px; }
 /* 单栏：两栏并排铺满视口，高度由 flex 撑开，滚动交给 textarea / output */
-.json-main[data-single] { display: flex; flex-direction: column; min-height: calc(100vh - 58px); }
+.json-main[data-single] { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 .json-main[data-single] .workarea { flex: 1 1 auto; }
 .json-main .json-layout[data-layout="single"] {
   display: grid;
   /* --json-split 是左栏占比（.35 ~ .65），由 json-formatter.js 拖拽写入 */
   grid-template-columns: minmax(0, calc(var(--json-split, 0.5) * 100%)) 9px minmax(0, 1fr);
+  /* 行高按内容定：状态栏是多出来的第二行（grid-column 1/-1），
+     若用默认 1fr 会把剩余空间分给它，把整块卡片撑高 */
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 0;
   flex: 1 1 auto;
-  min-height: 460px;
+  /* 单栏不再写死最小高度：视口够高时铺满，窗口很矮时也允许内部滚动，保证状态栏始终可见 */
+  min-height: 0;
 }
+/* 编辑区高度随视口：视口高时撑满到底部状态栏，窗口变矮时跟着收缩 */
+.json-main .json-layout[data-layout="single"] .pane { height: auto; min-height: 0; }
+.json-main .json-layout[data-layout="single"] #json-input-wrap { min-height: 0; }
 /* 可拖拽分隔条 */
 .json-divider {
   position: relative;
@@ -447,7 +464,6 @@ main.json-main.container { padding: 0 clamp(12px, 1.6vw, 28px); }
 .json-divider:hover .json-divider-grip,
 .json-divider.dragging .json-divider-grip { opacity: 1; background: var(--primary); }
 body.json-resizing { cursor: col-resize; user-select: none; }
-.json-main .json-layout[data-layout="single"] .pane { height: auto; min-height: 0; }
 /* 单栏时 pane 内部再分一层：头部/搜索栏固定高，正文吃满剩余高度（避免底部留白） */
 .json-main .json-layout[data-layout="single"] .pane { justify-content: flex-start; }
 .json-main .json-layout[data-layout="single"] .pane > #json-input-wrap,
@@ -864,6 +880,55 @@ mark.srch.current {
 .j-row { white-space: pre-wrap; word-break: break-word; padding: 1px 0; }
 .j-line { white-space: pre-wrap; word-break: break-word; }
 .j-more { color: var(--muted); font-size: 12px; padding: 4px 0; }
+
+/* ===== 行号：右侧文本视图由 JS 在 renderFoldableOutput 后按 DOM 顺序编号（行号写在 ::before 的 content 变量里） ===== */
+.json-output .j-line,
+.json-output .j-head { position: relative; }
+.json-output .j-line::before,
+.json-output .j-head::before {
+  content: attr(data-line);
+  position: absolute;
+  top: 1px;
+  right: calc(100% + 10px);
+  width: 28px;
+  text-align: right;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--muted);
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  user-select: none;
+}
+.json-output.with-gutter { padding-left: 56px; }
+.json-layout[data-layout="horizontal"] .compare-panel .json-output.with-gutter { padding-left: 48px; }
+
+/* ===== 行号：左侧输入框（textarea 无法显示行号，用独立列 + 同步滚动） ===== */
+.line-nums {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 46px;
+  padding: 14px 8px 14px 0;
+  overflow: hidden;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  opacity: 0.62;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  pointer-events: none;
+  background: var(--bg);
+  border-right: 1px solid var(--border-soft);
+}
+.line-nums-inner { will-change: transform; }
+.line-nums .ln { display: block; height: 1.7em; }
+#json-input-wrap.has-gutter pre,
+#json-input-wrap.has-gutter textarea { padding-left: 56px; }
 
 /* 多段 JSON 的分段标题（文本视图与树形视图共用） */
 .j-doc-sep {

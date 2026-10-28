@@ -9,6 +9,7 @@
   const hl = $("json-input-hl");
   const output = $("json-output");
   const treeEl = $("json-tree");
+  const lineNumsEl = $("json-line-nums");
   const LS_KEY = "webtools.json.input.v1";
   const LAYOUT_KEY = "webtools.json.layout.v1";
   const SYNC_KEY = "webtools.json.sync-scroll.v1";
@@ -644,8 +645,14 @@
     if (plain || allPrimitive || text.length > 500000) {
       const pre = document.createElement("pre");
       pre.className = "j-plain";
-      pre.innerHTML = highlight(text);
+      // 超大文本不拆行，避免 DOM 爆炸；普通体量逐行包一层，行号才能对齐
+      if (text.length > 500000) {
+        pre.innerHTML = highlight(text);
+      } else {
+        pre.innerHTML = text.split("\n").map((line) => `<span class="j-line">${highlight(line) || " "}</span>`).join("\n");
+      }
       output.appendChild(pre);
+      markGutter(output);
       return;
     }
     const indent = getIndent();
@@ -654,6 +661,7 @@
       if (docs.length > 1) output.appendChild(docLabel(i, docs.length, v));
       output.appendChild(buildFoldNode(v, 0, indentStr, true));
     });
+    markGutter(output);
   }
 
   // 多段时的分段标题：#序号 / 总数 + 类型，帮助定位是第几段
@@ -708,6 +716,7 @@
         head.querySelector(".j-preview").hidden = !collapsed;
         body.hidden = collapsed;
         foot.hidden = collapsed;
+        markGutter(output);
       });
 
       const body = document.createElement("div");
@@ -763,6 +772,7 @@
       body.hidden = collapsed;
       foot.hidden = collapsed;
     });
+    markGutter(output);
   }
 
   function renderTree(docs) {
@@ -824,13 +834,14 @@
     return esc(String(v));
   }
 
-  function updateInputCount() { $("st-input").textContent = input.value.length; }
+  function updateInputCount() { $("st-input").textContent = input.value.length; refreshLineNums(); }
 
   // ---------- 左侧变化 -> 右侧跟随（防抖，不改左侧，不弹通知） ----------
   let autoTimer = null;
   function resetRightToPlaceholder() {
     output.textContent = "格式化结果将显示在这里…";
     output.classList.add("placeholder"); treeEl.innerHTML = "";
+    markGutter(output);
     lastDocs = null; lastText = "";
     $("st-status").textContent = "待处理"; $("st-output").textContent = "0";
     $("st-type").textContent = "-"; $("st-depth").textContent = "-"; $("st-keys").textContent = "-";
@@ -927,6 +938,7 @@
       pre.className = "j-plain";
       pre.textContent = display;
       output.appendChild(pre);
+      markGutter(output);
       $("st-output").textContent = display.length;
       $("st-type").textContent = typeOf(once);
       $("st-status").textContent = "✅ 有效 JSON";
@@ -1046,9 +1058,11 @@
     refreshRightMatches();
     const pre = document.createElement("pre");
     pre.className = "j-plain";
-    pre.innerHTML = markMatches(lastText, rightSearch.matches, rightSearch.idx);
+    pre.innerHTML = markMatches(lastText, rightSearch.matches, rightSearch.idx)
+      .split("\n").map((line) => `<span class="j-line">${line || " "}</span>`).join("\n");
     output.innerHTML = "";
     output.appendChild(pre);
+    markGutter(output);
     if (scroll && rightSearch.matches.length) {
       const wrap = output.parentElement;
       const v = calcMarkScroll(wrap, output);
@@ -1066,6 +1080,7 @@
       output.classList.remove("placeholder");
       output.innerHTML = "";
       output.appendChild(pre);
+      markGutter(output);
     } else {
       output.textContent = "格式化结果将显示在这里…";
       output.classList.add("placeholder");
@@ -1382,9 +1397,78 @@
   });
 
   // 输入框高亮滚动与滚动条占位同步
-  input.addEventListener("scroll", () => { hl.scrollTop = input.scrollTop; });
+  input.addEventListener("scroll", () => { hl.scrollTop = input.scrollTop; syncLineNums(); });
   if (typeof ResizeObserver !== "undefined") new ResizeObserver(syncHlPadding).observe(input);
   else window.addEventListener("resize", syncHlPadding);
+  // 渲染完成后也要对齐一次，保证行号与行高一致
+  window.__jsonSyncLineNums = syncLineNums;
+
+  // ===== 行号 =====
+  // 左侧：textarea 无法自带行号，用一条独立列按行数渲染，并跟随 scrollTop 平移
+  // 右侧：交给 CSS 计数器（.json-output .j-line / .j-head::before），行号始终跟着真实文本流
+  (function initLineNumbers() {
+    const wrap = $("json-input-wrap");
+    if (!wrap || !lineNumsEl) return;
+    const inner = document.createElement("div");
+    inner.className = "line-nums-inner";
+    lineNumsEl.appendChild(inner);
+    let count = -1;
+
+    function render() {
+      const total = input.value.split("\n").length;
+      if (total === count) return;
+      count = total;
+      // 单行时不必显示行号，避免干扰
+      if (total <= 1) {
+        wrap.classList.remove("has-gutter");
+        inner.textContent = "";
+        return;
+      }
+      wrap.classList.add("has-gutter");
+      const frag = document.createDocumentFragment();
+      for (let i = 1; i <= total; i++) {
+        const s = document.createElement("span");
+        s.className = "ln";
+        s.textContent = i;
+        frag.appendChild(s);
+      }
+      inner.textContent = "";
+      inner.appendChild(frag);
+      window.__jsonSyncLineNums();
+    }
+
+    input.addEventListener("input", render);
+    render();
+    // 暴露给外部：恢复草稿、清空、载入文件等改动 value 后重新生成行号
+    window.__jsonRefreshLineNums = render;
+  })();
+
+  // 左侧行号跟随 textarea 的滚动位置（会被 scroll 事件和上方 render 调用）
+  function syncLineNums() {
+    const wrap = $("json-input-wrap");
+    const inner = lineNumsEl && lineNumsEl.firstChild;
+    if (!wrap || !inner || !wrap.classList.contains("has-gutter")) return;
+    const lh = parseFloat(getComputedStyle(input).lineHeight) || 22;
+    inner.style.transform = `translateY(${-input.scrollTop}px)`;
+    inner.style.paddingBottom = `${lh}px`;
+  }
+  window.__jsonSyncLineNums = syncLineNums;
+
+  function refreshLineNums() {
+    if (typeof window.__jsonRefreshLineNums === "function") window.__jsonRefreshLineNums();
+  }
+
+  // 右侧文本视图带行号时需要额外的左侧内边距；占位文案、错误卡片不加
+  // 行号按 DOM 文档顺序写入 data-line，折叠/展开后重新编号即可
+  function markGutter(el) {
+    let n = 0;
+    el.querySelectorAll(".j-line, .j-head").forEach((row) => {
+      // 折叠起来的子树不占行，跳过
+      if (row.closest("[hidden]")) return;
+      row.dataset.line = String(++n);
+    });
+    el.classList.toggle("with-gutter", n > 0);
+  }
 
   try {
     syncEnabled = localStorage.getItem(SYNC_KEY) !== "false";
