@@ -337,6 +337,12 @@
     if (!["single", "horizontal", "vertical"].includes(mode)) mode = "single";
     layoutMode = mode;
     $("json-layout").dataset.layout = mode;
+    // 单栏：工作区以视口高度铺满（见 common.css 的 .json-main[data-single]）
+    const mainEl = document.querySelector("main.json-main");
+    if (mainEl) {
+      if (mode === "single") mainEl.setAttribute("data-single", "");
+      else mainEl.removeAttribute("data-single");
+    }
     document.querySelectorAll("[data-layout]").forEach((btn) => {
       if (!btn.classList.contains("json-layout")) {
         const active = btn.dataset.layout === mode;

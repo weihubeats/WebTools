@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/css/common.css?v=20260925a" />
+  <link rel="stylesheet" href="../assets/css/common.css?v=20261028json" />
   <link rel="stylesheet" href="../assets/css/nav.css?v=20260925a" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>" />
 </head>
@@ -30,11 +30,10 @@
           全本地解析，不上传服务器
         </span>
       </div>
-      <p>可粘贴、拖入 .json 文件。支持缩进选择、键排序、转义处理、树形预览，左右联动实时渲染。</p>
-      <p>支持一次输入多段 JSON，并用左右或上下双栏选择任意两份报文同步滚动对比。</p>
+      <p title="支持粘贴 / 拖入 .json、多段报文对比、缩进选择、键排序、转义处理、树形预览，左右联动实时渲染。">可粘贴、拖入 .json · 多段报文左右或上下对比 · 键排序 / 转义 / 树形预览 · 实时渲染</p>
     </div>
 
-    <div class="toolbar" role="toolbar" aria-label="JSON 操作">
+    <div class="toolbar toolbar-dense" role="toolbar" aria-label="JSON 操作">
       <div class="tb-group" role="group" aria-label="核心动作">
         <button class="btn primary" id="btn-format">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v4a2 2 0 0 1-2 2 2 2 0 0 1 2 2v4c0 1.1.9 2 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2 2 2 0 0 0-2 2v4a2 2 0 0 1-2 2h-1"/></svg>
@@ -134,7 +133,6 @@
           <pre id="json-input-hl" aria-hidden="true"></pre>
           <textarea id="json-input" placeholder='在此粘贴 JSON，例如：{"name":"webtools","ok":true}&#10;支持多段：{"id":1}&#10;{"id":2}&#10;左侧原文保持不变，格式化结果只显示在右侧' spellcheck="false"></textarea>
         </div>
-        <div class="pane-footer drop-hint">💡 支持 Ctrl/Cmd + Enter 快捷格式化 · 输入自动保存在本地（localStorage）</div>
       </section>
 
       <section class="pane result-pane">
@@ -202,15 +200,17 @@
           </div>
         </div>
       </section>
-    </div>
 
-    <div class="statusbar" id="statusbar">
-      <span class="st-item st-state"><span class="dot" id="st-dot"></span>状态&nbsp;<b id="st-status">待处理</b></span>
-      <span class="st-item">输入&nbsp;<b id="st-input">0</b>&nbsp;字符</span>
-      <span class="st-item">输出&nbsp;<b id="st-output">0</b>&nbsp;字符</span>
-      <span class="st-item">类型&nbsp;<b id="st-type">-</b></span>
-      <span class="st-item">深度&nbsp;<b id="st-depth">-</b></span>
-      <span class="st-item">键数&nbsp;<b id="st-keys">-</b></span>
+      <div class="statusbar" id="statusbar">
+        <span class="st-item st-state"><span class="dot" id="st-dot"></span>状态&nbsp;<b id="st-status">待处理</b></span>
+        <span class="st-item">输入&nbsp;<b id="st-input">0</b>&nbsp;字符</span>
+        <span class="st-item">输出&nbsp;<b id="st-output">0</b>&nbsp;字符</span>
+        <span class="st-item">类型&nbsp;<b id="st-type">-</b></span>
+        <span class="st-item">深度&nbsp;<b id="st-depth">-</b></span>
+        <span class="st-item">键数&nbsp;<b id="st-keys">-</b></span>
+        <span class="st-item st-spacer"></span>
+        <span class="st-item st-help">💡 Ctrl/Cmd + Enter 格式化 · 输入自动保存在本地</span>
+      </div>
     </div>
 
     <p class="page-note">
