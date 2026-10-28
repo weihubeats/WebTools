@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/css/common.css?v=20261028c" />
+  <link rel="stylesheet" href="../assets/css/common.css?v=20261028d" />
   <link rel="stylesheet" href="../assets/css/nav.css?v=20261028c" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>" />
 </head>
@@ -135,6 +135,12 @@
         </div>
       </section>
 
+      <div class="json-divider" id="json-divider" role="separator" aria-orientation="vertical"
+           aria-label="拖动调整左右栏宽度" aria-valuemin="20" aria-valuemax="80" aria-valuenow="50" tabindex="0"
+           title="拖动调整宽度，双击恢复 1:1">
+        <span class="json-divider-grip" aria-hidden="true"></span>
+      </div>
+
       <section class="pane result-pane">
         <div class="pane-header">
           <span class="segmented" role="tablist" aria-label="视图切换">
@@ -246,6 +252,6 @@
       });
     })();
   </script>
-  <script src="../assets/js/json-formatter.js?v=20260922a"></script>
+  <script src="../assets/js/json-formatter.js?v=20261028d"></script>
 </body>
 </html>

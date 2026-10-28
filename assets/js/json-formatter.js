@@ -1157,6 +1157,77 @@
   ["single", "horizontal", "vertical"].forEach((mode) => {
     $("layout-" + mode).addEventListener("click", () => setLayout(mode));
   });
+
+  // ===== 单栏左右分栏宽度：分隔条可拖拽 =====
+  // 拖动改的是 --json-split（左栏占比），CSS 里 grid-template-columns 直接消费
+  (function initDivider() {
+    const DIV_KEY = "webtools.json.split.v1";
+    const MIN = 0.2;
+    const MAX = 0.8;
+    const divider = $("json-divider");
+    const layoutEl = $("json-layout");
+    if (!divider || !layoutEl) return;
+
+    let ratio = 0.5;
+    try {
+      const saved = parseFloat(localStorage.getItem(DIV_KEY));
+      if (Number.isFinite(saved)) ratio = Math.min(MAX, Math.max(MIN, saved));
+    } catch (_) {}
+
+    function apply(next, persist) {
+      ratio = Math.min(MAX, Math.max(MIN, next));
+      layoutEl.style.setProperty("--json-split", ratio.toFixed(4));
+      divider.setAttribute("aria-valuenow", String(Math.round(ratio * 100)));
+      if (persist) {
+        try { localStorage.setItem(DIV_KEY, String(ratio)); } catch (_) {}
+      }
+    }
+
+    function ratioFromEvent(e) {
+      const rect = layoutEl.getBoundingClientRect();
+      if (!rect.width) return ratio;
+      return (e.clientX - rect.left) / rect.width;
+    }
+
+    apply(ratio, false);
+
+    let dragging = false;
+    divider.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      divider.classList.add("dragging");
+      document.body.classList.add("json-resizing");
+      try { divider.setPointerCapture(e.pointerId); } catch (_) {}
+      e.preventDefault();
+    });
+    divider.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      apply(ratioFromEvent(e), false);
+    });
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      divider.classList.remove("dragging");
+      document.body.classList.remove("json-resizing");
+      try { divider.releasePointerCapture(e.pointerId); } catch (_) {}
+      apply(ratio, true);
+    }
+    divider.addEventListener("pointerup", endDrag);
+    divider.addEventListener("pointercancel", endDrag);
+
+    // 双击恢复默认 1:1
+    divider.addEventListener("dblclick", () => apply(0.5, true));
+
+    // 键盘：方向键每次 2%，Shift + 方向键 10%
+    divider.addEventListener("keydown", (e) => {
+      const step = e.shiftKey ? 0.1 : 0.02;
+      if (e.key === "ArrowLeft") { apply(ratio - step, true); e.preventDefault(); }
+      else if (e.key === "ArrowRight") { apply(ratio + step, true); e.preventDefault(); }
+      else if (e.key === "Home") { apply(0.5, true); e.preventDefault(); }
+    });
+
+    // 窗口尺寸变化时保持比例即可（百分比列宽会自动跟随），无需额外处理
+  })();
   ["a", "b"].forEach((side) => {
     $("compare-select-" + side).addEventListener("change", () => {
       renderComparePanel(side);

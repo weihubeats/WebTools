@@ -402,17 +402,57 @@ main.json-main.container { padding: 0 clamp(12px, 1.6vw, 28px); }
 .json-main[data-single] .workarea { flex: 1 1 auto; }
 .json-main .json-layout[data-layout="single"] {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* --json-split 是左栏占比（.35 ~ .65），由 json-formatter.js 拖拽写入 */
+  grid-template-columns: minmax(0, calc(var(--json-split, 0.5) * 100%)) 9px minmax(0, 1fr);
   gap: 0;
   flex: 1 1 auto;
   min-height: 460px;
 }
+/* 可拖拽分隔条 */
+.json-divider {
+  position: relative;
+  display: none;
+  cursor: col-resize;
+  touch-action: none;
+  background: transparent;
+}
+.json-main .json-layout[data-layout="single"] .json-divider { display: block; }
+.json-divider::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  margin-left: -0.5px;
+  background: var(--border);
+  transition: background 0.15s ease, width 0.15s ease;
+}
+.json-divider:hover::before,
+.json-divider:focus-visible::before,
+.json-divider.dragging::before { background: var(--primary); width: 3px; margin-left: -1.5px; }
+.json-divider:focus-visible { outline: none; }
+.json-divider-grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  border-radius: 3px;
+  background: var(--border-strong, var(--border));
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.json-divider:hover .json-divider-grip,
+.json-divider.dragging .json-divider-grip { opacity: 1; background: var(--primary); }
+body.json-resizing { cursor: col-resize; user-select: none; }
 .json-main .json-layout[data-layout="single"] .pane { height: auto; min-height: 0; }
 /* 单栏时 pane 内部再分一层：头部/搜索栏固定高，正文吃满剩余高度（避免底部留白） */
 .json-main .json-layout[data-layout="single"] .pane { justify-content: flex-start; }
 .json-main .json-layout[data-layout="single"] .pane > #json-input-wrap,
 .json-main .json-layout[data-layout="single"] .pane > .output-wrap { flex: 1 1 auto; min-height: 0; }
-.json-main .json-layout[data-layout="single"] .source-pane { border-right: 1px solid var(--border); }
+.json-main .json-layout[data-layout="single"] .source-pane { border-right: 0; }
 /* 紧凑工具栏（通用类，其他工具页可复用） */
 .toolbar.toolbar-dense { flex-wrap: wrap; gap: 6px; padding: 6px 8px; margin: 6px 0; border-radius: 12px; box-shadow: var(--shadow-sm); }
 .toolbar.toolbar-dense .btn { padding: 6px 10px; font-size: 12.5px; gap: 5px; }
@@ -444,6 +484,8 @@ main.json-main.container { padding: 0 clamp(12px, 1.6vw, 28px); }
     border-bottom: 1px solid var(--border);
   }
   .json-main .json-layout[data-layout="single"] .result-pane { flex: 1 1 0; min-height: 220px; }
+  /* 上下堆叠时不需要竖直分隔条 */
+  .json-main .json-layout[data-layout="single"] .json-divider { display: none; }
 }
 .json-layout-controls {
   display: inline-flex;
