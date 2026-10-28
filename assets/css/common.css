@@ -331,6 +331,8 @@ a:hover { text-decoration: underline; }
 .json-main .json-layout-controls { gap: 6px; }
 .json-main .layout-segmented .seg-btn { padding: 4px 9px; font-size: 11.5px; }
 .json-main .workarea { margin-bottom: 8px; gap: 10px; }
+/* JSON 页是编辑器型页面：内容随视口宽度铺满，不套 1100px 的阅读宽度 */
+main.json-main.container { max-width: none; width: 100%; padding: 0 clamp(12px, 1.6vw, 28px); }
 /* 状态栏并入工作区卡片底部，不再单独占一条 */
 .json-main .statusbar {
   grid-column: 1 / -1;
@@ -406,6 +408,10 @@ a:hover { text-decoration: underline; }
   min-height: 460px;
 }
 .json-main .json-layout[data-layout="single"] .pane { height: auto; min-height: 0; }
+/* 单栏时 pane 内部再分一层：头部/搜索栏固定高，正文吃满剩余高度（避免底部留白） */
+.json-main .json-layout[data-layout="single"] .pane { justify-content: flex-start; }
+.json-main .json-layout[data-layout="single"] .pane > #json-input-wrap,
+.json-main .json-layout[data-layout="single"] .pane > .output-wrap { flex: 1 1 auto; min-height: 0; }
 .json-main .json-layout[data-layout="single"] .source-pane { border-right: 1px solid var(--border); }
 /* 紧凑工具栏（通用类，其他工具页可复用） */
 .toolbar.toolbar-dense { flex-wrap: wrap; gap: 6px; padding: 6px 8px; margin: 6px 0; border-radius: 12px; box-shadow: var(--shadow-sm); }
