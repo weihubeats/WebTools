@@ -76,6 +76,22 @@ a:hover { text-decoration: underline; }
 .tool-page > footer,
 .tool-page > .site-footer { margin-top: auto; }
 
+/* JSON 页：整页锁定在一屏内，滚动只发生在编辑器框内部，状态栏与页脚始终可见 */
+@media (min-height: 520px) {
+  body.tool-page:has(> main.json-main) {
+    height: 100vh;
+    overflow: hidden;
+  }
+  body.tool-page:has(> main.json-main) > main.json-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  body.tool-page:has(> main.json-main) > footer.site-footer { flex: 0 0 auto; }
+  /* 编辑区吃掉剩余高度，内容在框内滚动 */
+  body.tool-page:has(> main.json-main) .json-main .workarea { flex: 1 1 auto; min-height: 0; }
+}
+
 /* 顶栏：毛玻璃 + 底部分隔 + 轻阴影 */
 .site-header {
   background: var(--header-bg);
@@ -355,6 +371,9 @@ main.json-main.container { padding: 0 clamp(12px, 1.6vw, 28px); flex: 1 1 auto; 
   border-top: 1px solid var(--border-soft);
   border-radius: 0 0 var(--radius) var(--radius);
   box-shadow: none;
+  /* 状态栏永远占住自己的高度，不被上方编辑区压缩 */
+  flex: 0 0 auto;
+  min-height: 30px;
 }
 .json-main .st-spacer { flex: 1; }
 .json-main .st-help { color: var(--muted); opacity: 0.8; font-size: 11.5px; }
@@ -881,16 +900,17 @@ mark.srch.current {
 .j-line { white-space: pre-wrap; word-break: break-word; }
 .j-more { color: var(--muted); font-size: 12px; padding: 4px 0; }
 
-/* ===== 行号：右侧文本视图由 JS 在 renderFoldableOutput 后按 DOM 顺序编号（行号写在 ::before 的 content 变量里） ===== */
+/* ===== 行号：右侧文本视图 =====
+   JS 在每行开头插入 <span class="ln-num">。行号统一贴在最左侧那一列
+   （而不是跟着 JSON 层级缩进），这样整列行号是齐的，和编辑器一致。 */
+.json-output { position: relative; }
 .json-output .j-line,
-.json-output .j-head { position: relative; }
-.json-output .j-line::before,
-.json-output .j-head::before {
-  content: attr(data-line);
+.json-output .j-row,
+.json-output .j-head { position: static; }
+.json-output .ln-num {
   position: absolute;
-  top: 1px;
-  right: calc(100% + 10px);
-  width: 28px;
+  left: 14px;
+  width: 30px;
   text-align: right;
   font-size: 11.5px;
   font-weight: 400;
@@ -901,7 +921,9 @@ mark.srch.current {
   pointer-events: none;
   user-select: none;
 }
-.json-output.with-gutter { padding-left: 56px; }
+/* 行号竖直位置与该行首行对齐：用每行自己的 top 偏移由 JS 写入 --ln-top */
+.json-output .ln-num { top: var(--ln-top, 0); }
+.json-output.with-gutter { padding-left: 58px; }
 .json-layout[data-layout="horizontal"] .compare-panel .json-output.with-gutter { padding-left: 48px; }
 
 /* ===== 行号：左侧输入框（textarea 无法显示行号，用独立列 + 同步滚动） ===== */

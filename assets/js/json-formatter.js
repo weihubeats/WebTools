@@ -1459,15 +1459,53 @@
   }
 
   // 右侧文本视图带行号时需要额外的左侧内边距；占位文案、错误卡片不加
-  // 行号按 DOM 文档顺序写入 data-line，折叠/展开后重新编号即可
+  // 每个“行元素”插入 <span class="ln-num">，定位方式是绝对定位 + 每行 position:relative
+  // 只在本行第一个视觉行显示（多行折行时行号只出现在首行，后续行自动让位）
   function markGutter(el) {
+    const rows = [];
+    const walkBody = (container) => {
+      [...container.children].forEach((child) => {
+        if (child.classList.contains("j-row")) {
+          const inner = child.querySelector(":scope > .j-node");
+          if (!inner) { rows.push(child); return; }
+          rows.push(child); // 键 + 开括号
+          const body = inner.querySelector(":scope > .j-body");
+          if (body) walkBody(body);
+          const foot = inner.querySelector(":scope > .j-foot");
+          if (foot) rows.push(foot);
+        } else if (child.classList.contains("j-node")) {
+          const head = child.querySelector(":scope > .j-head");
+          const body = child.querySelector(":scope > .j-body");
+          const foot = child.querySelector(":scope > .j-foot");
+          if (head) rows.push(head);
+          if (body) walkBody(body);
+          if (foot) rows.push(foot);
+        } else {
+          rows.push(child); // .j-line / .j-more / .j-doc-sep
+        }
+      });
+    };
+    walkBody(el);
     let n = 0;
-    el.querySelectorAll(".j-line, .j-head").forEach((row) => {
-      // 折叠起来的子树不占行，跳过
+    const placed = [];
+    rows.forEach((row) => {
       if (row.closest("[hidden]")) return;
-      row.dataset.line = String(++n);
+      row.querySelectorAll(":scope > .ln-num").forEach((x) => x.remove());
+      const num = document.createElement("span");
+      num.className = "ln-num";
+      num.textContent = String(++n);
+      row.insertBefore(num, row.firstChild);
+      placed.push({ row, num });
     });
     el.classList.toggle("with-gutter", n > 0);
+    // 行号统一贴在最左侧一列：用每行相对输出框的偏移定位，避免随 JSON 层级缩进而参差
+    requestAnimationFrame(() => {
+      if (!el.classList.contains("with-gutter")) return;
+      const base = el.getBoundingClientRect().top;
+      placed.forEach(({ row, num }) => {
+        num.style.setProperty("--ln-top", `${row.getBoundingClientRect().top - base}px`);
+      });
+    });
   }
 
   try {
